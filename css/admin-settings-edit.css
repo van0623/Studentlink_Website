@@ -1,0 +1,4 @@
+.edit{max-width:760px}
+.edit .row{display:grid;grid-template-columns:1fr 1fr;gap:0 18px}
+.edit input:disabled{opacity:.55;cursor:not-allowed}
+@media (max-width:980px){.edit .row{grid-template-columns:1fr}}

@@ -1,0 +1,5 @@
+.who-card{display:flex;align-items:center;gap:24px;flex-wrap:wrap;background:var(--orange);color:var(--ink)}
+.who-card h2{font:900 2.8rem/.95 var(--f-head);text-transform:uppercase;letter-spacing:0;color:var(--ink);margin:0}
+.who-card p{color:#3d2314;font-weight:700}
+.who-card .status{margin-left:auto;background:var(--ink);color:var(--stone)}
+.avatar-lg{width:84px;height:84px;border-radius:20px;display:grid;place-items:center;flex:none;background:var(--ink);color:var(--orange);font:900 2.4rem var(--f-head)}

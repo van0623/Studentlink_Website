@@ -1,0 +1,2 @@
+.kv{grid-template-columns:180px 1fr}
+@media (max-width:980px){.kv{grid-template-columns:1fr}}

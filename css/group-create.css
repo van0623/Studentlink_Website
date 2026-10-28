@@ -1,0 +1,723 @@
+/* =========================================================
+   STUDENTLINK - CREATE STUDY GROUP (MODERN SINGLE CARD)
+   Theme: Charcoal (#12130f), Olive (#85876d), Orange (#e45b22), Off-White (#f7f5ed)
+========================================================= */
+
+/* ---------- COLOR VARIABLES & TOKENS ---------- */
+
+:root {
+    --bg: #12130f;
+    --panel: #1e1f19;
+    --panel-soft: #25271f;
+    --panel-hover: #2b2d24;
+
+    --orange: #e45b22;
+    --orange-light: #ff7d47;
+    --orange-soft: rgba(228, 91, 34, 0.12);
+    --orange-glow: rgba(228, 91, 34, 0.25);
+
+    --olive: #85876d;
+    --olive-light: #a5a78b;
+    --olive-soft: rgba(133, 135, 109, 0.14);
+
+    --stone: #f7f5ed;
+    --text: #f1efe5;
+    --muted: #aaa99b;
+
+    --line: rgba(247, 245, 237, 0.08);
+    --line-light: rgba(247, 245, 237, 0.16);
+
+    --danger: #ffb3a0;
+    --danger-bg: rgba(228, 91, 34, 0.12);
+
+    --radius-sm: 10px;
+    --radius-md: 16px;
+    --radius-lg: 24px;
+
+    --shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+    --transition: 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+
+/* =========================================
+TOP NAVIGATION
+========================================= */
+
+.nav {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+
+    width: 100%;
+    min-height: 78px;
+    padding: 14px max(24px, calc((100% - 1440px) / 2));
+
+    background: rgba(17, 18, 15, 0.96);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    box-sizing: border-box;
+}
+
+/* Logo */
+
+.nav .logo {
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+
+    color: #f3f0e8;
+    font-family: 'Big Shoulders Display', 'Arial Narrow', sans-serif;
+    font-size: 31px;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: 0.4px;
+    text-decoration: none;
+    text-transform: uppercase;
+}
+
+.nav .logo::before {
+    display: inline-block;
+    width: 9px;
+    height: 27px;
+    margin-right: 10px;
+
+    background: #d94f16;
+    border-radius: 3px;
+    content: "";
+    transform: skew(-12deg);
+}
+
+.nav .logo:hover {
+    color: #ff7540;
+}
+
+/* Navigation links */
+
+.nav .nav-links {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 5px;
+
+    min-width: 0;
+    margin: 0 auto;
+    padding: 0;
+}
+
+.nav .nav-links a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 42px;
+    padding: 9px 15px;
+
+    color: #a3a394;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 10px;
+
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    white-space: nowrap;
+
+    transition: color 0.2s ease, background 0.2s ease;
+}
+
+.nav .nav-links a:hover {
+    color: #f3f0e8;
+    background: #24251f;
+}
+
+.nav .nav-links a[aria-current="page"] {
+    color: #ff7540;
+    background: rgba(217, 79, 22, 0.13);
+    border-color: rgba(217, 79, 22, 0.2);
+}
+
+/* Right-side navigation controls */
+
+.nav .nav-tools {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-shrink: 0;
+    gap: 9px;
+    margin: 0;
+    padding: 0;
+}
+
+/* Notification and message buttons */
+
+.nav .icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    width: 41px;
+    height: 41px;
+    padding: 0;
+
+    color: #f3f0e8;
+    background: #24251f;
+    border: 1px solid #3b3c32;
+    border-radius: 12px;
+
+    font-size: 17px;
+    line-height: 1;
+    text-decoration: none;
+}
+
+.nav .icon-btn:hover,
+.nav .icon-btn[aria-current="page"] {
+    color: #ff7540;
+    background: rgba(217, 79, 22, 0.13);
+    border-color: rgba(217, 79, 22, 0.4);
+}
+
+/* Profile avatar */
+
+.nav .avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    width: 41px;
+    height: 41px;
+
+    color: #f3f0e8;
+    background: #85876d;
+    border: 2px solid rgba(243, 240, 232, 0.12);
+    border-radius: 13px;
+
+    font-size: 14px;
+    font-weight: 800;
+    text-decoration: none;
+    text-transform: uppercase;
+}
+
+.nav .avatar:hover {
+    color: #ffffff;
+    background: #d94f16;
+}
+
+/* Logout button */
+
+.nav .logout {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 41px;
+    padding: 8px 13px;
+
+    color: #a3a394;
+    background: transparent;
+    border: 1px solid #3b3c32;
+    border-radius: 10px;
+
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.nav .logout:hover {
+    color: #f3f0e8;
+    background: #24251f;
+    border-color: #4b4c3e;
+}
+
+/* Keyboard accessibility */
+
+.nav a:focus-visible {
+    outline: 2px solid #ff7540;
+    outline-offset: 3px;
+}
+
+/* Tablet */
+
+@media (max-width: 1050px) {
+    .nav {
+        flex-wrap: wrap;
+        gap: 14px;
+        padding: 14px 24px;
+    }
+
+    .nav .nav-links {
+        order: 3;
+        width: 100%;
+        justify-content: flex-start;
+        margin: 0;
+    }
+
+    .nav .nav-tools {
+        margin-left: auto;
+    }
+}
+
+/* Mobile */
+
+@media (max-width: 560px) {
+    .nav {
+        gap: 12px;
+        padding: 12px 14px;
+    }
+
+    .nav .logo {
+        font-size: 25px;
+    }
+
+    .nav .nav-tools {
+        gap: 6px;
+    }
+
+    .nav .icon-btn,
+    .nav .avatar {
+        width: 35px;
+        height: 35px;
+    }
+
+    .nav .logout {
+        min-height: 35px;
+        padding: 6px 8px;
+        font-size: 12px;
+    }
+
+    .nav .nav-links {
+        gap: 4px;
+    }
+
+    .nav .nav-links a {
+        min-height: 36px;
+        padding: 7px 10px;
+        font-size: 13px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .nav,
+    .nav a {
+        transition: none;
+    }
+}
+
+
+/* ---------- BASE PAGE SETUP ---------- */
+
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+.wrap {
+    width: min(100% - 40px, 860px);
+    margin: 0 auto;
+    padding: 34px 0 76px;
+}
+
+/* ---------- BACK NAVIGATION ---------- */
+
+.wrap nav {
+    margin-bottom: 24px;
+}
+
+.back {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 40px;
+    padding: 6px 14px;
+    color: var(--muted);
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 100px;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: all var(--transition);
+}
+
+.back:hover {
+    color: var(--stone);
+    background: var(--panel-hover);
+    border-color: var(--line-light);
+    transform: translateX(-3px);
+}
+
+.back:focus-visible {
+    outline: 2px solid var(--orange-light);
+    outline-offset: 4px;
+}
+
+/* ---------- MAIN FORM CARD ---------- */
+
+.form-card {
+    position: relative;
+    width: 100%;
+    margin: 0 auto;
+    padding: clamp(28px, 5vw, 48px);
+    overflow: hidden;
+    background: 
+        radial-gradient(circle at 90% 10%, var(--orange-glow), transparent 40%),
+        radial-gradient(circle at 10% 90%, var(--olive-soft), transparent 50%),
+        var(--panel);
+    border: 1px solid var(--line-light);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+}
+
+.form-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(
+        90deg,
+        var(--orange),
+        var(--orange-light) 50%,
+        var(--olive)
+    );
+}
+
+/* ---------- FORM HEADER ---------- */
+
+.form-card > header {
+    margin-bottom: 36px;
+}
+
+.form-card > header::before {
+    content: "STUDENTLINK / STUDY GROUPS";
+    display: inline-block;
+    margin-bottom: 16px;
+    padding: 6px 14px;
+    color: var(--orange-light);
+    background: var(--orange-soft);
+    border: 1px solid rgba(228, 91, 34, 0.25);
+    border-radius: 100px;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+}
+
+.form-card h1 {
+    margin: 0 0 12px;
+    color: var(--stone);
+    font-family: "Big Shoulders Display", sans-serif;
+    font-size: clamp(36px, 5vw, 52px);
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    line-height: 1.05;
+}
+
+.form-card > header p {
+    max-width: 600px;
+    margin: 0;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+/* ---------- FORM LAYOUT ---------- */
+
+.form-card form {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+}
+
+.field label {
+    color: var(--stone);
+    font-size: 13px;
+    font-weight: 750;
+    line-height: 1.5;
+}
+
+/* ---------- INPUT CONTROLS ---------- */
+
+.field input,
+.field select,
+.field textarea {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    padding: 14px 16px;
+    color: var(--stone);
+    background: #151611;
+    border: 1px solid var(--line-light);
+    border-radius: var(--radius-sm);
+    outline: none;
+    font: inherit;
+    font-size: 14px;
+    line-height: 1.6;
+    transition: all var(--transition);
+}
+
+.field input,
+.field select {
+    min-height: 50px;
+}
+
+.field input::placeholder,
+.field textarea::placeholder {
+    color: #6d6f62;
+    opacity: 1;
+}
+
+.field input:hover,
+.field select:hover,
+.field textarea:hover {
+    border-color: var(--olive);
+    background: #181913;
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+    background: #1b1c16;
+    border-color: var(--orange);
+    box-shadow: 0 0 0 4px var(--orange-soft);
+}
+
+.field input:focus-visible,
+.field select:focus-visible,
+.field textarea:focus-visible {
+    outline: none;
+}
+
+/* ---------- CUSTOM SELECT DROPDOWN ---------- */
+
+.field select {
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%20%23a5a78b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    padding-right: 44px;
+}
+
+.field select option {
+    color: var(--stone);
+    background: var(--panel);
+}
+
+/* ---------- TEXTAREA ---------- */
+
+.field textarea {
+    min-height: 140px;
+    resize: vertical;
+    line-height: 1.7;
+}
+
+/* ---------- NUMBER INPUT ---------- */
+
+.field input[type="number"] {
+    appearance: textfield;
+    -moz-appearance: textfield;
+}
+
+.field input[type="number"]::-webkit-inner-spin-button,
+.field input[type="number"]::-webkit-outer-spin-button {
+    margin: 0;
+    -webkit-appearance: none;
+}
+
+/* ---------- ROW GRID ---------- */
+
+.row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+}
+
+/* ---------- VALIDATION ERRORS ---------- */
+
+.form-card .errors,
+.form-card .error-list,
+.form-card .form-errors {
+    margin: 0 0 24px;
+    padding: 16px 20px;
+    color: var(--danger);
+    background: var(--danger-bg);
+    border: 1px solid rgba(228, 91, 34, 0.3);
+    border-left: 4px solid var(--orange);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+.form-card .errors ul,
+.form-card .error-list ul,
+.form-card .form-errors ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.form-card .errors li + li,
+.form-card .error-list li + li,
+.form-card .form-errors li + li {
+    margin-top: 6px;
+}
+
+.form-card .error {
+    color: var(--danger);
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+/* ---------- ACTION BUTTONS ---------- */
+
+.actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-top: 12px;
+    padding-top: 28px;
+    border-top: 1px solid var(--line);
+}
+
+.actions .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-width: 140px;
+    min-height: 48px;
+    padding: 12px 24px;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 800;
+    line-height: 1.4;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all var(--transition);
+}
+
+.actions .btn:hover {
+    transform: translateY(-2px);
+}
+
+.actions .btn:active {
+    transform: translateY(0);
+}
+
+.actions .btn:focus-visible {
+    outline: 2px solid var(--orange-light);
+    outline-offset: 4px;
+}
+
+/* Cancel Button */
+.actions .btn-quiet {
+    color: var(--stone);
+    background: transparent;
+    border-color: var(--line-light);
+}
+
+.actions .btn-quiet:hover {
+    color: var(--orange-light);
+    background: var(--orange-soft);
+    border-color: var(--orange);
+}
+
+/* Create Button */
+.actions .btn-primary {
+    color: #fffaf4;
+    background: var(--orange);
+    border-color: var(--orange);
+    box-shadow: 0 6px 20px var(--orange-soft);
+}
+
+.actions .btn-primary:hover {
+    background: var(--orange-light);
+    border-color: var(--orange-light);
+    box-shadow: 0 10px 28px var(--orange-glow);
+}
+
+/* ---------- RESPONSIVE: TABLET & MOBILE ---------- */
+
+@media (max-width: 768px) {
+    .wrap {
+        width: calc(100% - 32px);
+        padding-top: 24px;
+        padding-bottom: 56px;
+    }
+
+    .form-card {
+        padding: 28px 24px;
+        border-radius: 18px;
+    }
+
+    .row {
+        gap: 16px;
+    }
+}
+
+@media (max-width: 560px) {
+    .wrap {
+        width: calc(100% - 24px);
+        padding-top: 20px;
+        padding-bottom: 40px;
+    }
+
+    .form-card {
+        padding: 24px 18px;
+        border-radius: 16px;
+    }
+
+    .row {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 22px;
+    }
+
+    .actions {
+        flex-direction: column-reverse;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    .actions .btn {
+        width: 100%;
+    }
+}
+
+/* ---------- ACCESSIBILITY ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+    }
+}

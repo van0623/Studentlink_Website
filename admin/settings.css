@@ -1,0 +1,570 @@
+:root {
+    --bg: #0c0d0a;
+    --bg-soft: #11120f;
+    --panel: #151611;
+    --panel-hover: #1b1c16;
+    --panel-light: #23241d;
+    --panel-deep: #0f100c;
+
+    --line: #292a22;
+    --line-light: #393a2f;
+
+    --stone: #f3f0e8;
+    --text: #e8e5dc;
+    --muted: #c0c0b2;
+    --faint: #aaa99a;
+
+    --orange: #d94f16;
+    --orange-light: #ff895c;
+    --orange-soft: rgba(217, 79, 22, 0.14);
+
+    --olive: #85876d;
+    --olive-light: #c9cbb0;
+
+    --black: #070806;
+    --white: #ffffff;
+
+    --radius: 20px;
+    --shadow: 0 14px 35px rgba(0, 0, 0, 0.4);
+
+    --f-head: 'Big Shoulders Display', 'Arial Narrow', Impact, sans-serif;
+    --f-body: 'Source Sans 3', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+.main .admin-settings-page {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    max-width: 920px;
+    color: var(--text);
+}
+
+/* ---------- PAGE HEAD ---------- */
+
+.main .admin-settings-page .page-head {
+    margin: 0 0 10px;
+    padding: 2px 0 22px;
+    border-bottom: 1px solid var(--line);
+}
+
+.main .settings-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    padding: 5px 10px;
+    color: #d0d2b8;
+    background: rgba(133, 135, 109, 0.10);
+    border: 1px solid rgba(133, 135, 109, 0.20);
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+}
+
+.main .settings-eyebrow::before {
+    width: 6px;
+    height: 6px;
+    background: var(--orange);
+    border-radius: 50%;
+    content: "";
+}
+
+.main .admin-settings-page .page-head h1 {
+    margin: 0 0 8px;
+    color: var(--stone);
+    font-family: var(--f-head);
+    font-size: clamp(36px, 4vw, 54px);
+    font-weight: 700;
+    line-height: 0.98;
+    text-transform: uppercase;
+}
+
+.main .admin-settings-page .page-head p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.65;
+}
+
+/* ---------- ALERTS ---------- */
+
+.main .settings-alert {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 13px 16px;
+    border: 1px solid;
+    border-left-width: 3px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.55;
+}
+
+.main .settings-alert-success {
+    color: #d7e4c4;
+    background: rgba(141, 154, 121, 0.10);
+    border-color: rgba(141, 154, 121, 0.30);
+    border-left-color: #8d9a79;
+}
+
+.main .settings-alert-success::before {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    color: #0c0d0a;
+    background: #8d9a79;
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: 800;
+    content: "\2713";
+}
+
+.main .settings-alert-error {
+    color: #ffb59b;
+    background: var(--orange-soft);
+    border-color: rgba(217, 79, 22, 0.30);
+    border-left-color: var(--orange);
+}
+
+/* ---------- LIVE STATS ---------- */
+
+.main .settings-stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.main .settings-stat-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding: 20px;
+    overflow: hidden;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    transition: background 0.2s ease, border-color 0.2s ease,
+                transform 0.2s ease;
+}
+
+.main .settings-stat-card:hover {
+    background: var(--panel-hover);
+    border-color: var(--line-light);
+    transform: translateY(-2px);
+}
+
+.main .settings-stat-card::before {
+    position: absolute;
+    top: 0;
+    left: 20px;
+    width: 28px;
+    height: 2px;
+    background: var(--olive);
+    border-radius: 0 0 2px 2px;
+    content: "";
+    transition: width 0.25s ease, background 0.2s ease;
+}
+
+.main .settings-stat-card:hover::before {
+    width: 48px;
+    background: var(--orange);
+}
+
+.main .settings-stat-card:nth-child(1)::before { background: var(--orange-light); }
+.main .settings-stat-card:nth-child(2)::before { background: #b7a17e; }
+.main .settings-stat-card:nth-child(3)::before { background: var(--olive-light); }
+
+.main .settings-stat-label {
+    color: #b8b8aa;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 1.15px;
+    text-transform: uppercase;
+}
+
+.main .settings-stat-card strong {
+    display: block;
+    margin-top: 18px;
+    color: var(--stone);
+    font-family: var(--f-head);
+    font-size: 52px;
+    font-weight: 700;
+    line-height: 0.95;
+}
+
+.main .settings-stat-card small {
+    display: block;
+    margin-top: 8px;
+    color: var(--muted);
+    font-size: 12.5px;
+    line-height: 1.45;
+}
+
+/* ---------- SECTION CARDS ---------- */
+
+.main .admin-settings-page .info,
+.main .admin-settings-page .settings-section {
+    position: relative;
+    min-width: 0;
+    overflow: hidden;
+    padding: 24px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+}
+
+.main .admin-settings-page .settings-section::before {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, var(--orange), transparent 55%);
+    content: "";
+}
+
+.main .settings-section-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 18px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--line);
+}
+
+.main .settings-section-heading > div:first-child { min-width: 0; }
+
+.main .settings-section-heading h2 {
+    margin: 0 0 5px;
+    color: var(--stone);
+    font-family: var(--f-head);
+    font-size: clamp(26px, 3vw, 34px);
+    font-weight: 700;
+    line-height: 1.05;
+    text-transform: uppercase;
+}
+
+.main .settings-section-heading p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 13.5px;
+    line-height: 1.55;
+}
+
+.main .settings-profile-icon,
+.main .settings-notification-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 56px;
+    height: 56px;
+    color: var(--stone);
+    background: rgba(133, 135, 109, 0.24);
+    border: 1px solid rgba(183, 185, 155, 0.20);
+    border-radius: 16px;
+    font-family: var(--f-head);
+    font-size: 26px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.main .settings-notification-icon {
+    color: var(--orange-light);
+    background: var(--orange-soft);
+    border-color: rgba(217, 79, 22, 0.25);
+    font-size: 20px;
+}
+
+/* ---------- KEY / VALUE LIST ---------- */
+
+.main .admin-settings-page .kv {
+    display: grid;
+    grid-template-columns: minmax(120px, 190px) minmax(0, 1fr);
+    margin: 0;
+}
+
+.main .admin-settings-page .kv dt,
+.main .admin-settings-page .kv dd {
+    margin: 0;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line);
+}
+
+.main .admin-settings-page .kv dt {
+    color: var(--olive-light);
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 1.3px;
+    line-height: 1.9;
+    text-transform: uppercase;
+}
+
+.main .admin-settings-page .kv dd {
+    color: var(--stone);
+    font-size: 14.5px;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.main .admin-settings-page .kv dt:last-of-type,
+.main .admin-settings-page .kv dd:last-of-type {
+    border-bottom: 0;
+}
+
+/* Role + status pills */
+.main .settings-role,
+.main .settings-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 5px 11px;
+    border: 1px solid;
+    border-radius: 999px;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    line-height: 1.3;
+    text-transform: uppercase;
+}
+
+.main .settings-role {
+    color: var(--orange-light);
+    background: var(--orange-soft);
+    border-color: rgba(217, 79, 22, 0.34);
+}
+
+.main .settings-status {
+    color: #76d90c;
+    background: rgba(141, 154, 121, 0.14);
+    border-color: rgba(141, 154, 121, 0.35);
+}
+
+.main .settings-status::before {
+    width: 6px;
+    height: 6px;
+    background: currentColor;
+    border-radius: 50%;
+    content: "";
+}
+
+/* ---------- NOTIFICATION CHECKS ---------- */
+
+.main .admin-settings-page .checks {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.main .settings-check {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 16px 18px;
+    background: var(--panel-deep);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.main .settings-check:hover {
+    background: var(--panel-hover);
+    border-color: var(--line-light);
+}
+
+.main .settings-check:has(input:checked) {
+    border-color: rgba(217, 79, 22, 0.35);
+    background:
+        linear-gradient(115deg, rgba(217, 79, 22, 0.06), transparent 65%),
+        var(--panel-deep);
+}
+
+.main .settings-check:has(input:focus-visible) {
+    outline: 2px solid var(--orange-light);
+    outline-offset: 2px;
+}
+
+/* Custom checkbox */
+.main .settings-check input[type="checkbox"] {
+    position: relative;
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    margin: 1px 0 0;
+    background: var(--panel);
+    border: 1.5px solid var(--line-light);
+    border-radius: 6px;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.main .settings-check input[type="checkbox"]:hover {
+    border-color: var(--olive-light);
+}
+
+.main .settings-check input[type="checkbox"]:checked {
+    background: var(--orange);
+    border-color: var(--orange);
+}
+
+.main .settings-check input[type="checkbox"]:checked::after {
+    position: absolute;
+    top: 3px;
+    left: 7px;
+    width: 5px;
+    height: 10px;
+    border: solid var(--white);
+    border-width: 0 2px 2px 0;
+    content: "";
+    transform: rotate(45deg);
+}
+
+.main .settings-check-content {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+}
+
+.main .settings-check-content strong {
+    color: var(--stone);
+    font-size: 14.5px;
+    font-weight: 700;
+}
+
+.main .settings-check-content small {
+    color: var(--muted);
+    font-size: 12.5px;
+    line-height: 1.55;
+}
+
+/* ---------- ACTIONS ---------- */
+
+.main .admin-settings-page .actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-top: 22px;
+    padding-top: 22px;
+    border-top: 1px solid var(--line);
+}
+
+/* ---------- BUTTONS ---------- */
+
+.main .admin-settings-page .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 10px 20px;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    font-family: var(--f-body);
+    font-size: 13.5px;
+    font-weight: 700;
+    line-height: 1.3;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: color 0.2s ease, background 0.2s ease,
+                border-color 0.2s ease, transform 0.2s ease,
+                box-shadow 0.2s ease;
+}
+
+.main .admin-settings-page .btn:hover { transform: translateY(-1px); }
+.main .admin-settings-page .btn:active { transform: translateY(0); }
+
+.main .admin-settings-page .btn:focus-visible {
+    outline: 2px solid var(--orange-light);
+    outline-offset: 3px;
+}
+
+.main .admin-settings-page .btn-primary {
+    color: var(--white);
+    background: var(--orange);
+    border-color: var(--orange);
+}
+
+.main .admin-settings-page .btn-primary:hover {
+    color: var(--white);
+    background: #c94714;
+    border-color: #c94714;
+    box-shadow: 0 8px 20px rgba(217, 79, 22, 0.25);
+}
+
+.main .admin-settings-page .btn-ghost {
+    color: #f0eee6;
+    background: transparent;
+    border-color: var(--line-light);
+}
+
+.main .admin-settings-page .btn-ghost:hover {
+    color: var(--orange-light);
+    background: var(--orange-soft);
+    border-color: rgba(217, 79, 22, 0.38);
+}
+
+/* ---------- RESPONSIVE ---------- */
+
+@media (max-width: 760px) {
+    .main .settings-stats { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (max-width: 560px) {
+    .main .admin-settings-page .info,
+    .main .admin-settings-page .settings-section { padding: 20px 16px; }
+
+    .main .settings-profile-icon,
+    .main .settings-notification-icon {
+        width: 46px;
+        height: 46px;
+        border-radius: 13px;
+    }
+
+    .main .admin-settings-page .kv { grid-template-columns: minmax(0, 1fr); }
+
+    .main .admin-settings-page .kv dt {
+        padding: 14px 0 2px;
+        border-bottom: 0;
+    }
+
+    .main .admin-settings-page .kv dd { padding: 0 0 14px; }
+
+    .main .admin-settings-page .actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .main .admin-settings-page .btn { width: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .main .admin-settings-page .btn:hover,
+    .main .settings-stat-card:hover { transform: none; }
+}
+
+.alert {
+    padding: 14px 18px;
+    margin-bottom: 20px;
+    border-radius: 10px;
+    font-size: 14px;
+}
+
+.alert-success {
+    color: #45ce2d;
+    background: rgba(70, 150, 70, 0.12);
+    border: 1px solid rgba(100, 180, 100, 0.35);
+}

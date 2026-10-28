@@ -1,0 +1,1672 @@
+:root {
+    --bg: #171815;
+    --bg-soft: #1d1e19;
+    --panel: #24251f;
+    --panel-hover: #2c2d25;
+    --panel-light: #33342b;
+
+    --line: #3b3c32;
+    --line-light: #4b4c3e;
+
+    --stone: #f3f0e8;
+    --text: #e8e5dc;
+    --muted: #a3a394;
+
+    --orange: #d94f16;
+    --orange-light: #ff7540;
+    --orange-soft: rgba(217, 79, 22, 0.13);
+
+    --olive: #85876d;
+    --olive-light: #b7b99b;
+
+    --black: #11120f;
+    --white: #ffffff;
+
+    --radius: 20px;
+    --radius-small: 12px;
+
+    --f-head: 'Big Shoulders Display', 'Arial Narrow', Impact, sans-serif;
+    --f-body: 'Source Sans 3', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+    --shadow: 0 14px 35px rgba(0, 0, 0, 0.13);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    min-height: 100%;
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+
+    color: var(--text);
+    background:
+        radial-gradient(
+            ellipse at 85% 0%,
+            rgba(133, 135, 109, 0.08),
+            transparent 36%
+        ),
+        var(--bg);
+
+    font-family: var(--f-body);
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+h1,
+h2,
+h3,
+h4 {
+    margin-top: 0;
+
+    color: var(--stone);
+    font-family: var(--f-head);
+    font-weight: 800;
+    line-height: 0.98;
+    text-transform: uppercase;
+}
+
+p {
+    margin-top: 0;
+}
+
+a {
+    color: var(--orange-light);
+    text-decoration: none;
+
+    transition:
+        color 0.2s ease,
+        background 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.2s ease;
+}
+
+button,
+input,
+select,
+textarea {
+    font: inherit;
+}
+
+button {
+    cursor: pointer;
+}
+
+::selection {
+    color: var(--white);
+    background: var(--orange);
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+    outline: 2px solid var(--orange-light);
+    outline-offset: 3px;
+}
+
+
+/* =========================================
+   4. RESOURCES PAGE CONTAINER
+========================================= */
+
+.resources-page {
+    width: min(1380px, calc(100% - 64px));
+    margin: 36px auto 60px;
+}
+
+
+/* =========================================
+   5. PAGE INTRODUCTION
+========================================= */
+
+.resources-intro {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 35px;
+    min-height: 290px;
+    padding: clamp(32px, 5vw, 62px);
+
+    background:
+        linear-gradient(
+            110deg,
+            rgba(217, 79, 22, 0.12),
+            transparent 60%
+        ),
+        var(--panel);
+
+    border: 1px solid var(--line);
+    border-radius: 26px;
+    box-shadow: var(--shadow);
+}
+
+.resources-intro::before {
+    position: absolute;
+    z-index: -1;
+    top: -100px;
+    right: 15%;
+
+    width: 230px;
+    height: 350px;
+
+    background: rgba(217, 79, 22, 0.07);
+    border: 1px solid rgba(255, 117, 64, 0.14);
+    border-radius: 120px;
+
+    content: "";
+    transform: rotate(35deg);
+    pointer-events: none;
+}
+
+.resources-intro-content {
+    position: relative;
+    z-index: 1;
+
+    max-width: 760px;
+}
+
+.resources-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+
+    margin-bottom: 18px;
+
+    color: var(--orange-light);
+
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.resources-eyebrow::before {
+    display: inline-block;
+
+    width: 24px;
+    height: 2px;
+
+    background: var(--orange-light);
+    content: "";
+}
+
+.resources-intro h1 {
+    margin-bottom: 20px;
+
+    color: var(--stone);
+    font-size: clamp(46px, 6vw, 76px);
+    letter-spacing: -0.5px;
+}
+
+.resources-intro h1 span {
+    color: var(--orange-light);
+}
+
+.resources-intro p {
+    max-width: 600px;
+    margin-bottom: 0;
+
+    color: var(--muted);
+    font-size: 17px;
+    line-height: 1.8;
+}
+
+
+/* Upload button */
+
+.resource-upload-btn {
+    position: relative;
+    z-index: 1;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    gap: 10px;
+    min-height: 49px;
+    padding: 12px 19px;
+
+    color: var(--white);
+    background: var(--orange);
+    border: 1px solid var(--orange);
+    border-radius: 12px;
+
+    font-size: 14px;
+    font-weight: 800;
+    white-space: nowrap;
+
+    box-shadow: 0 8px 20px rgba(217, 79, 22, 0.16);
+}
+
+.resource-upload-btn:hover {
+    color: var(--white);
+    background: var(--orange-light);
+    border-color: var(--orange-light);
+    transform: translateY(-2px);
+}
+
+.upload-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 23px;
+    height: 23px;
+
+    color: var(--white);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 7px;
+
+    font-size: 20px;
+    line-height: 1;
+}
+
+
+/* =========================================
+   6. SEARCH AND FILTER TOOLBAR
+========================================= */
+
+.resources-toolbar {
+    margin-top: 22px;
+    padding: 17px;
+
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 17px;
+}
+
+.resources-filter-form {
+    display: grid;
+    grid-template-columns: minmax(200px, 1fr) minmax(150px, 190px) minmax(135px, 165px) auto auto;
+
+    align-items: center;
+    gap: 11px;
+    margin: 0;
+}
+
+
+/* Search field */
+
+.resource-search {
+    display: flex;
+    align-items: center;
+
+    gap: 12px;
+    min-width: 0;
+    min-height: 48px;
+    padding: 0 14px;
+
+    background: var(--black);
+    border: 1px solid var(--line);
+    border-radius: 11px;
+
+    transition: border-color 0.2s ease;
+}
+
+.resource-search:focus-within {
+    border-color: var(--orange-light);
+}
+
+.search-icon {
+    flex-shrink: 0;
+
+    color: var(--orange-light);
+    font-size: 24px;
+    line-height: 1;
+    transform: rotate(-25deg);
+}
+
+.resource-search input {
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    padding: 10px 0;
+
+    color: var(--stone);
+    background: transparent;
+    border: 0;
+    outline: 0;
+
+    font-size: 14px;
+}
+
+.resource-search input:focus {
+    outline: 0;
+}
+
+.resource-search input::placeholder {
+    color: #818276;
+    opacity: 1;
+}
+
+.resource-search input::-webkit-search-cancel-button {
+    cursor: pointer;
+}
+
+
+/* Filter dropdowns */
+
+.resource-filter {
+    min-width: 0;
+}
+
+.resource-filter select {
+    display: block;
+
+    width: 100%;
+    min-height: 48px;
+    padding: 10px 32px 10px 13px;
+
+    color: var(--text);
+    background: var(--black);
+    border: 1px solid var(--line);
+    border-radius: 11px;
+
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.resource-filter select:focus {
+    border-color: var(--orange-light);
+    outline: 0;
+}
+
+.resource-filter option {
+    color: var(--text);
+    background: var(--panel);
+}
+
+
+/* Search and clear buttons */
+
+.resource-search-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 48px;
+    padding: 11px 20px;
+
+    color: var(--white);
+    background: var(--orange);
+    border: 1px solid var(--orange);
+    border-radius: 11px;
+
+    font-size: 14px;
+    font-weight: 800;
+    white-space: nowrap;
+
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease;
+}
+
+.resource-search-btn:hover {
+    background: var(--orange-light);
+    border-color: var(--orange-light);
+    transform: translateY(-1px);
+}
+
+.resource-clear-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 48px;
+    padding: 10px 13px;
+
+    color: var(--muted);
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: 11px;
+
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.resource-clear-btn:hover {
+    color: var(--stone);
+    background: var(--panel-hover);
+    border-color: var(--line-light);
+}
+
+
+/* =========================================
+   7. LIBRARY SECTION HEADING
+========================================= */
+
+.resources-library {
+    margin-top: 42px;
+}
+
+.resources-section-heading {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+
+    gap: 24px;
+    margin-bottom: 23px;
+}
+
+.resources-section-heading .resources-eyebrow {
+    margin-bottom: 13px;
+}
+
+.resources-section-heading h2 {
+    margin-bottom: 12px;
+
+    color: var(--stone);
+    font-size: clamp(34px, 4vw, 45px);
+}
+
+.resources-section-heading p {
+    margin-bottom: 0;
+
+    color: var(--muted);
+    font-size: 15px;
+}
+
+
+/* Results count */
+
+.resources-count {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    flex-shrink: 0;
+
+    min-height: 49px;
+    padding: 9px 15px;
+
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+}
+
+.resources-count strong {
+    color: var(--orange-light);
+    font-family: var(--f-head);
+    font-size: 29px;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.resources-count span {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+
+/* =========================================
+   8. RESOURCE CARD GRID
+========================================= */
+
+.resources-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    gap: 18px;
+}
+
+
+/* Individual card */
+
+.resource-card {
+    position: relative;
+    overflow: hidden;
+
+    display: flex;
+    flex-direction: column;
+
+    min-width: 0;
+    min-height: 330px;
+    padding: 24px;
+
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+
+    transition:
+        transform 0.22s ease,
+        background 0.22s ease,
+        border-color 0.22s ease,
+        box-shadow 0.22s ease;
+}
+
+.resource-card::before {
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 3px;
+
+    background: var(--olive);
+    content: "";
+
+    transition: background 0.2s ease;
+}
+
+.resource-card:nth-child(4n + 1)::before {
+    background: var(--orange);
+}
+
+.resource-card:nth-child(4n + 2)::before {
+    background: var(--olive-light);
+}
+
+.resource-card:nth-child(4n + 3)::before {
+    background: #b7a17e;
+}
+
+.resource-card:nth-child(4n + 4)::before {
+    background: #8d9a79;
+}
+
+.resource-card:hover {
+    transform: translateY(-4px);
+    background: var(--panel-hover);
+    border-color: var(--line-light);
+    box-shadow: var(--shadow);
+}
+
+.resource-card:hover::before {
+    background: var(--orange-light);
+}
+
+
+/* Card top row */
+
+.resource-card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+
+    gap: 14px;
+    margin-bottom: 23px;
+}
+
+
+/* PDF/file icon */
+
+.resource-file-icon {
+    position: relative;
+
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-start;
+
+    width: 54px;
+    height: 62px;
+    flex-shrink: 0;
+    padding: 0 7px 8px;
+
+    color: var(--orange-light);
+    background: var(--orange-soft);
+    border: 1px solid rgba(217, 79, 22, 0.32);
+    border-radius: 9px 9px 9px 4px;
+}
+
+.resource-file-icon::before {
+    position: absolute;
+    top: 0;
+    right: 0;
+
+    width: 15px;
+    height: 15px;
+
+    background: var(--panel);
+    border-bottom: 1px solid rgba(217, 79, 22, 0.32);
+    border-left: 1px solid rgba(217, 79, 22, 0.32);
+
+    content: "";
+    clip-path: polygon(0 0, 100% 100%, 0 100%);
+}
+
+.file-fold {
+    position: absolute;
+    top: 25px;
+    left: 8px;
+
+    width: 35px;
+    height: 1px;
+
+    background: rgba(255, 117, 64, 0.5);
+}
+
+.file-type-label {
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: 0.5px;
+    line-height: 1;
+}
+
+
+/* Subject badge */
+
+.resource-subject {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    max-width: 65%;
+    padding: 7px 11px;
+
+    color: var(--olive-light);
+    background: rgba(133, 135, 109, 0.12);
+    border: 1px solid rgba(133, 135, 109, 0.25);
+    border-radius: 8px;
+
+    font-size: 11px;
+    font-weight: 800;
+    line-height: 1.4;
+    text-align: center;
+}
+
+
+/* =========================================
+   9. RESOURCE CARD CONTENT
+========================================= */
+
+.resource-card-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.resource-card-content h3 {
+    margin-bottom: 12px;
+
+    color: var(--stone);
+    font-size: clamp(26px, 3vw, 34px);
+    line-height: 1.05;
+    overflow-wrap: anywhere;
+}
+
+.resource-description {
+    display: -webkit-box;
+    overflow: hidden;
+
+    margin-bottom: 23px;
+
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.8;
+
+    -webkit-box-orient: vertical;
+    line-clamp: 3;
+    -webkit-line-clamp: 3;
+}
+
+
+/* File metadata */
+
+.resource-card-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 12px;
+    padding: 15px 0;
+
+    border-top: 1px solid var(--line);
+}
+
+.resource-size {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    flex-shrink: 0;
+
+    color: var(--stone);
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.resource-size span {
+    color: var(--orange-light);
+    font-size: 13px;
+}
+
+.resource-uploader {
+    color: var(--muted);
+    font-size: 12px;
+    text-align: right;
+    overflow-wrap: anywhere;
+}
+
+
+/* =========================================
+   10. RESOURCE CARD FOOTER
+========================================= */
+
+.resource-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 12px;
+    padding-top: 16px;
+
+    border-top: 1px solid var(--line);
+}
+
+.resource-format {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.resource-view-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 10px;
+    min-height: 40px;
+    padding: 9px 13px;
+
+    color: var(--stone);
+    background: var(--black);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+
+    font-size: 12px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.resource-view-btn span {
+    color: var(--orange-light);
+    font-size: 17px;
+
+    transition: transform 0.2s ease;
+}
+
+.resource-view-btn:hover {
+    color: var(--white);
+    background: var(--orange);
+    border-color: var(--orange);
+}
+
+.resource-view-btn:hover span {
+    color: var(--white);
+    transform: translateX(3px);
+}
+
+
+/* =========================================
+   11. EMPTY SEARCH RESULTS
+========================================= */
+
+.resources-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 350px;
+    padding: 45px 25px;
+
+    background: var(--panel);
+    border: 1px dashed var(--line-light);
+    border-radius: var(--radius);
+
+    text-align: center;
+}
+
+.empty-state-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 70px;
+    height: 70px;
+    margin-bottom: 23px;
+
+    color: var(--orange-light);
+    background: var(--orange-soft);
+    border: 1px solid rgba(217, 79, 22, 0.25);
+    border-radius: 22px;
+
+    font-size: 35px;
+    transform: rotate(-15deg);
+}
+
+.resources-empty-state h3 {
+    margin-bottom: 12px;
+    font-size: 33px;
+}
+
+.resources-empty-state p {
+    max-width: 440px;
+    margin-bottom: 24px;
+
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.8;
+}
+
+.resources-empty-state .resource-search-btn {
+    text-decoration: none;
+}
+
+
+/* =========================================
+   12. RESPONSIVE NAVIGATION
+========================================= */
+
+@media (max-width: 1150px) {
+    .nav {
+        flex-wrap: wrap;
+        gap: 12px 18px;
+        padding: 14px 24px;
+    }
+
+    .logo {
+        margin-right: auto;
+    }
+
+    .nav-tools {
+        margin-left: auto;
+    }
+
+    .nav-links {
+        order: 3;
+        justify-content: flex-start;
+
+        width: 100%;
+        margin: 0;
+        padding-top: 8px;
+
+        overflow-x: auto;
+        overscroll-behavior-x: contain;
+    }
+
+    .nav-links a {
+        flex-shrink: 0;
+    }
+
+    .resources-filter-form {
+        grid-template-columns: minmax(200px, 1fr) minmax(140px, 180px) minmax(130px, 155px) auto;
+    }
+
+    .resource-clear-btn {
+        grid-column: 4;
+        justify-self: stretch;
+        min-height: 40px;
+    }
+}
+
+
+/* =========================================
+   13. TABLET LAYOUT
+========================================= */
+
+@media (max-width: 850px) {
+    .resources-page {
+        width: calc(100% - 36px);
+        margin: 25px auto 45px;
+    }
+
+    .resources-intro {
+        align-items: flex-start;
+        flex-direction: column;
+
+        gap: 24px;
+        min-height: 0;
+        padding: 36px 30px;
+    }
+
+    .resources-intro h1 {
+        font-size: clamp(43px, 8vw, 65px);
+    }
+
+    .resources-intro p {
+        font-size: 16px;
+    }
+
+    .resources-filter-form {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .resource-search {
+        grid-column: 1 / -1;
+    }
+
+    .resource-search-btn {
+        width: 100%;
+    }
+
+    .resource-clear-btn {
+        grid-column: auto;
+    }
+
+    .resources-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+    }
+
+    .resource-card {
+        padding: 21px;
+    }
+
+    .resource-card-meta {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 7px;
+    }
+
+    .resource-uploader {
+        text-align: left;
+    }
+
+    .resource-card-footer {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .resource-view-btn {
+        width: 100%;
+    }
+}
+
+
+/* =========================================
+   14. MOBILE LAYOUT
+========================================= */
+
+@media (max-width: 560px) {
+    .nav {
+        gap: 10px;
+        padding: 12px;
+    }
+
+    .logo {
+        font-size: 24px;
+    }
+
+    .logo::before {
+        width: 7px;
+        height: 23px;
+        margin-right: 7px;
+    }
+
+    .nav-tools {
+        gap: 5px;
+    }
+
+    .icon-btn,
+    .avatar {
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+        font-size: 14px;
+    }
+
+    .logout {
+        min-height: 34px;
+        padding: 5px 8px;
+        font-size: 11px;
+    }
+
+    .nav-links {
+        gap: 3px;
+        padding-top: 5px;
+    }
+
+    .nav-links a {
+        min-height: 35px;
+        padding: 7px 10px;
+        border-radius: 8px;
+        font-size: 12px;
+    }
+
+    .resources-page {
+        width: calc(100% - 24px);
+        margin: 16px auto 30px;
+    }
+
+    .resources-intro {
+        gap: 23px;
+        padding: 28px 21px;
+        border-radius: 18px;
+    }
+
+    .resources-intro .resources-eyebrow {
+        margin-bottom: 15px;
+        font-size: 10px;
+        letter-spacing: 1.5px;
+    }
+
+    .resources-intro h1 {
+        margin-bottom: 16px;
+        font-size: 45px;
+    }
+
+    .resources-intro p {
+        font-size: 14px;
+        line-height: 1.8;
+    }
+
+    .resource-upload-btn {
+        width: 100%;
+        min-height: 46px;
+    }
+
+    .resources-toolbar {
+        margin-top: 14px;
+        padding: 12px;
+        border-radius: 14px;
+    }
+
+    .resources-filter-form {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 9px;
+    }
+
+    .resource-search {
+        grid-column: auto;
+    }
+
+    .resource-filter select,
+    .resource-search,
+    .resource-search-btn,
+    .resource-clear-btn {
+        min-height: 45px;
+    }
+
+    .resource-search-btn,
+    .resource-clear-btn {
+        width: 100%;
+    }
+
+    .resources-library {
+        margin-top: 31px;
+    }
+
+    .resources-section-heading {
+        align-items: flex-start;
+        flex-direction: column;
+
+        gap: 17px;
+        margin-bottom: 18px;
+    }
+
+    .resources-section-heading .resources-eyebrow {
+        margin-bottom: 12px;
+    }
+
+    .resources-section-heading h2 {
+        margin-bottom: 10px;
+        font-size: 36px;
+    }
+
+    .resources-section-heading p {
+        font-size: 14px;
+    }
+
+    .resources-count {
+        min-height: 42px;
+        padding: 7px 12px;
+    }
+
+    .resources-count strong {
+        font-size: 25px;
+    }
+
+    .resources-grid {
+        grid-template-columns: 1fr;
+        gap: 13px;
+    }
+
+    .resource-card {
+        min-height: 0;
+        padding: 21px;
+        border-radius: 16px;
+    }
+
+    .resource-card-top {
+        margin-bottom: 20px;
+    }
+
+    .resource-card-content h3 {
+        font-size: 30px;
+    }
+
+    .resource-description {
+        margin-bottom: 18px;
+        font-size: 14px;
+    }
+
+    .resource-card-meta {
+        padding: 13px 0;
+    }
+
+    .resource-card-footer {
+        padding-top: 13px;
+    }
+
+    .resource-view-btn {
+        min-height: 42px;
+    }
+
+    .resources-empty-state {
+        min-height: 300px;
+        padding: 30px 20px;
+        border-radius: 16px;
+    }
+
+    .resources-empty-state h3 {
+        font-size: 29px;
+    }
+
+    .resources-empty-state p {
+        font-size: 14px;
+    }
+}
+
+
+/* =========================================
+   15. REDUCED MOTION
+========================================= */
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+
+/* =========================================
+   16. FEEDBACK MESSAGES
+========================================= */
+
+.notice {
+    margin: 22px 0 0;
+    padding: 16px 20px;
+
+    color: var(--stone);
+    background: rgba(133, 135, 109, 0.12);
+    border: 1px solid rgba(133, 135, 109, 0.35);
+    border-left: 4px solid var(--olive);
+    border-radius: 11px;
+
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+.notice.success {
+    color: #a9e58e;
+    background: rgba(93, 214, 44, 0.12);
+    border-color: rgba(93, 214, 44, 0.25);
+    border-left-color: #5dd62c;
+}
+
+.notice.error {
+    color: #ffb3a0;
+    background: rgba(217, 79, 22, 0.12);
+    border-color: rgba(217, 79, 22, 0.3);
+    border-left-color: var(--orange);
+}
+
+
+/* =========================================
+   17. OWNER ACTIONS (edit / delete resource)
+========================================= */
+
+.resource-owner-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+
+    gap: 12px;
+    margin-top: 16px;
+    padding-top: 16px;
+
+    border-top: 1px solid var(--line);
+}
+
+.resource-owner-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+
+    color: var(--orange-light);
+
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.resource-owner-label::before {
+    display: inline-block;
+
+    width: 20px;
+    height: 2px;
+
+    background: var(--orange-light);
+    content: "";
+}
+
+.resource-owner-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+}
+
+.resource-delete-form {
+    display: flex;
+    margin: 0;
+}
+
+.resource-edit-btn,
+.resource-delete-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 40px;
+    padding: 9px 18px;
+
+    border: 1px solid transparent;
+    border-radius: 10px;
+
+    font: inherit;
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1.3;
+    text-align: center;
+    white-space: nowrap;
+    cursor: pointer;
+
+    transition:
+        color 0.25s ease,
+        background 0.25s ease,
+        border-color 0.25s ease,
+        transform 0.25s ease;
+}
+
+.resource-edit-btn:hover,
+.resource-delete-btn:hover {
+    transform: translateY(-2px);
+}
+
+.resource-edit-btn:active,
+.resource-delete-btn:active {
+    transform: translateY(0);
+}
+
+/* Edit = orange */
+.resource-edit-btn {
+    color: var(--white);
+    background: var(--orange);
+    border-color: var(--orange);
+}
+
+.resource-edit-btn:hover {
+    color: var(--white);
+    background: var(--orange-light);
+    border-color: var(--orange-light);
+}
+
+/* Delete = outlined warning */
+.resource-delete-btn {
+    color: #ffb3a0;
+    background: transparent;
+    border-color: rgba(255, 140, 125, 0.4);
+}
+
+.resource-delete-btn:hover {
+    color: var(--white);
+    background: rgba(217, 79, 22, 0.35);
+    border-color: var(--orange-light);
+}
+
+.resource-edit-btn:focus-visible,
+.resource-delete-btn:focus-visible {
+    outline: 2px solid var(--orange-light);
+    outline-offset: 3px;
+}
+
+@media (max-width: 560px) {
+    .resource-owner-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .resource-owner-buttons {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .resource-edit-btn,
+    .resource-delete-btn,
+    .resource-delete-form {
+        width: 100%;
+        min-height: 42px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .resource-edit-btn:hover,
+    .resource-delete-btn:hover {
+        transform: none;
+    }
+}
+
+
+/* =========================================
+   18. EDIT RESOURCE FORM
+========================================= */
+
+/* Notice inside the library section (error list) */
+.resources-library > .notice {
+    margin: 0 0 18px;
+}
+
+.resources-library > .notice ul {
+    margin: 0;
+    padding-left: 18px;
+}
+
+/* Form card */
+.resource-edit-form {
+    position: relative;
+    overflow: hidden;
+
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 30px;
+
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+}
+
+.resource-edit-form::before {
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 3px;
+
+    background: var(--orange);
+    content: "";
+}
+
+
+/* ---------- FIELDS ---------- */
+
+.resource-edit-form .field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    min-width: 0;
+    margin-bottom: 20px;
+}
+
+.resource-edit-form .field label {
+    color: var(--stone);
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.3px;
+}
+
+.resource-edit-form .field input,
+.resource-edit-form .field select,
+.resource-edit-form .field textarea {
+    display: block;
+
+    width: 100%;
+    min-height: 48px;
+    padding: 11px 14px;
+
+    color: var(--stone);
+    background: var(--black);
+    border: 1px solid var(--line);
+    border-radius: 11px;
+
+    font-size: 14px;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.resource-edit-form .field select {
+    padding-right: 32px;
+    cursor: pointer;
+}
+
+.resource-edit-form .field option {
+    color: var(--text);
+    background: var(--panel);
+}
+
+.resource-edit-form .field textarea {
+    min-height: 150px;
+    line-height: 1.7;
+    resize: vertical;
+}
+
+.resource-edit-form .field input:hover,
+.resource-edit-form .field select:hover,
+.resource-edit-form .field textarea:hover {
+    border-color: var(--line-light);
+}
+
+.resource-edit-form .field input:focus,
+.resource-edit-form .field select:focus,
+.resource-edit-form .field textarea:focus {
+    border-color: var(--orange-light);
+    box-shadow: 0 0 0 3px var(--orange-soft);
+    outline: 0;
+}
+
+
+/* ---------- CURRENT FILE INFO ---------- */
+
+.resource-edit-form .field > p {
+    margin: 0;
+
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+/* First paragraph = file name */
+.resource-edit-form .field > label + p {
+    padding: 12px 14px;
+
+    color: var(--stone);
+    background: var(--black);
+    border: 1px dashed var(--line-light);
+    border-radius: 11px;
+
+    font-size: 14px;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}
+
+
+/* ---------- ACTIONS + BUTTONS ---------- */
+
+.resource-edit-form .actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 11px;
+
+    margin-top: 28px;
+    padding-top: 24px;
+
+    border-top: 1px solid var(--line);
+}
+
+.resource-edit-form .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    min-height: 48px;
+    padding: 11px 24px;
+
+    border: 1px solid transparent;
+    border-radius: 11px;
+
+    font-size: 14px;
+    font-weight: 800;
+    line-height: 1.3;
+    text-align: center;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+
+    transition:
+        color 0.25s ease,
+        background 0.25s ease,
+        border-color 0.25s ease,
+        box-shadow 0.25s ease,
+        transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.resource-edit-form .btn:hover {
+    transform: translateY(-2px);
+}
+
+.resource-edit-form .btn:active {
+    transform: translateY(0);
+}
+
+.resource-edit-form .btn-primary {
+    color: var(--white);
+    background: var(--orange);
+    border-color: var(--orange);
+    box-shadow: 0 8px 20px rgba(217, 79, 22, 0.16);
+}
+
+.resource-edit-form .btn-primary:hover {
+    color: var(--white);
+    background: var(--orange-light);
+    border-color: var(--orange-light);
+    box-shadow: 0 8px 25px rgba(217, 79, 22, 0.2);
+}
+
+.resource-edit-form .btn-quiet {
+    color: var(--muted);
+    background: transparent;
+    border-color: var(--line);
+}
+
+.resource-edit-form .btn-quiet:hover {
+    color: var(--stone);
+    background: var(--panel-hover);
+    border-color: var(--line-light);
+}
+
+
+/* ---------- RESPONSIVE ---------- */
+
+@media (max-width: 850px) {
+    .resource-edit-form {
+        padding: 24px;
+    }
+}
+
+@media (max-width: 560px) {
+    .resource-edit-form {
+        padding: 20px 16px;
+        border-radius: 16px;
+    }
+
+    .resource-edit-form .actions {
+        flex-direction: column-reverse;
+        align-items: stretch;
+    }
+
+    .resource-edit-form .btn {
+        width: 100%;
+        min-height: 46px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .resource-edit-form .btn:hover {
+        transform: none;
+    }
+}
+
+
+/* Report Resource button */
+
+.resource-report-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    width: 100%;
+    margin: 10px;
+}
+
+.resource-report-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 11px 17px;
+
+    color: #f08a60;
+    background: rgba(228, 91, 34, 0.08);
+    border: 1px solid rgba(228, 91, 34, 0.4);
+    border-radius: 10px;
+
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+
+    transition: 0.2s ease;
+}
+
+.resource-report-btn:hover {
+    color: #ffffff;
+    background: #e45b22;
+    border-color: #e45b22;
+}
+
+@media (max-width: 850px) {
+    .resource-report-btn {
+        width: 100%;
+    }
+}
+@media (max-width: 850px) {
+    .resource-report-btn {
+        width: 100%;
+    }
+}

@@ -1,0 +1,20 @@
+
+.edit-item-image {
+    display: block;
+    width: 100%;
+    max-width: 420px;
+    max-height: 320px;
+    margin: 10px 0 8px;
+    padding: 8px;
+    object-fit: contain;
+    background: var(--black);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+}
+
+@media (max-width: 560px) {
+    .edit-item-image {
+        max-width: 100%;
+        max-height: 240px;
+    }
+}

@@ -1,0 +1,423 @@
+*/
+
+:root {
+    --report-bg: #171815;
+    --report-bg-soft: #1d1e19;
+    --report-panel: #24251f;
+    --report-panel-hover: #2c2d25;
+
+    --report-line: #3b3c32;
+    --report-line-light: #4b4c3e;
+
+    --report-orange: #e45b22;
+    --report-orange-hover: #f06a32;
+    --report-orange-soft: rgba(228, 91, 34, 0.10);
+    --report-orange-border: rgba(228, 91, 34, 0.38);
+
+    --report-olive: #85876d;
+    --report-olive-soft: rgba(133, 135, 109, 0.12);
+
+    --report-text: #f3f0e8;
+    --report-text-soft: #c4c2b8;
+    --report-muted: #96968a;
+
+    --report-danger: #e47770;
+    --report-danger-bg: rgba(190, 65, 57, 0.12);
+    --report-danger-border: rgba(220, 90, 80, 0.35);
+
+    --report-success: #8fbd86;
+    --report-success-bg: rgba(105, 160, 90, 0.12);
+    --report-success-border: rgba(105, 160, 90, 0.35);
+}
+
+/* =========================================
+   1. GENERAL PAGE
+========================================= */
+
+.report-page {
+    width: 100%;
+    min-height: calc(100vh - 160px);
+    padding: 55px 20px 75px;
+    background: var(--report-bg);
+    color: var(--report-text);
+}
+
+.report-page *,
+.report-page *::before,
+.report-page *::after {
+    box-sizing: border-box;
+}
+
+/* =========================================
+   2. MAIN CONTAINER
+========================================= */
+
+.report-container {
+    width: 100%;
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 38px;
+    background: var(--report-panel);
+    border: 1px solid var(--report-line);
+    border-radius: 18px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.20);
+}
+
+/* =========================================
+   3. PAGE HEADING
+========================================= */
+
+.report-heading {
+    margin-bottom: 30px;
+}
+
+.report-eyebrow {
+    display: inline-block;
+    margin-bottom: 12px;
+    color: var(--report-orange);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.report-heading h1 {
+    margin: 0 0 12px;
+    color: var(--report-text);
+    font-size: clamp(30px, 5vw, 42px);
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: -1px;
+}
+
+.report-heading h1 span {
+    color: var(--report-orange);
+}
+
+.report-heading p {
+    max-width: 560px;
+    margin: 0;
+    color: var(--report-text-soft);
+    font-size: 14px;
+    line-height: 1.8;
+}
+
+/* =========================================
+   4. REPORTED TARGET INFORMATION
+========================================= */
+
+.report-target {
+    margin-bottom: 28px;
+    padding: 20px 22px;
+    background: var(--report-bg-soft);
+    border: 1px solid var(--report-line);
+    border-left: 3px solid var(--report-orange);
+    border-radius: 12px;
+}
+
+.report-target > span {
+    display: block;
+    margin-bottom: 9px;
+    color: var(--report-muted);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+}
+
+.report-target h2 {
+    margin: 0 0 7px;
+    color: var(--report-text);
+    font-size: 19px;
+    font-weight: 700;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+}
+
+.report-target p {
+    margin: 0;
+    color: var(--report-orange);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+/* =========================================
+   5. REPORT FORM
+========================================= */
+
+.report-form {
+    display: flex;
+    flex-direction: column;
+    gap: 23px;
+    width: 100%;
+}
+
+.report-field {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.report-field label {
+    color: var(--report-text);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.report-field select,
+.report-field textarea {
+    width: 100%;
+    padding: 14px 15px;
+    color: var(--report-text);
+    background: var(--report-bg-soft);
+    border: 1px solid var(--report-line-light);
+    border-radius: 10px;
+    outline: none;
+    font-family: inherit;
+    font-size: 13px;
+    line-height: 1.6;
+    transition: border-color 0.2s ease,
+                background 0.2s ease,
+                box-shadow 0.2s ease;
+}
+
+.report-field select {
+    min-height: 48px;
+    cursor: pointer;
+}
+
+.report-field select option {
+    color: var(--report-text);
+    background: var(--report-panel);
+}
+
+.report-field textarea {
+    min-height: 145px;
+    resize: vertical;
+}
+
+.report-field textarea::placeholder {
+    color: var(--report-muted);
+    opacity: 0.85;
+}
+
+.report-field select:focus,
+.report-field textarea:focus {
+    border-color: var(--report-orange);
+    background: #20211b;
+    box-shadow: 0 0 0 3px var(--report-orange-soft);
+}
+
+.report-field small {
+    color: var(--report-muted);
+    font-size: 11px;
+    line-height: 1.7;
+}
+
+/* =========================================
+   6. REPORT NOTICE
+========================================= */
+
+.report-notice {
+    padding: 15px 17px;
+    color: var(--report-text-soft);
+    background: var(--report-olive-soft);
+    border: 1px solid rgba(133, 135, 109, 0.25);
+    border-radius: 10px;
+    font-size: 12px;
+    line-height: 1.8;
+}
+
+/* =========================================
+   7. FORM ACTIONS
+========================================= */
+
+.report-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    padding-top: 5px;
+}
+
+.report-cancel-btn,
+.report-submit-btn,
+.report-back-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 45px;
+    padding: 11px 19px;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.2s ease,
+                color 0.2s ease,
+                border-color 0.2s ease,
+                transform 0.2s ease;
+}
+
+/* Cancel */
+
+.report-cancel-btn {
+    color: var(--report-text-soft);
+    background: var(--report-bg-soft);
+    border: 1px solid var(--report-line-light);
+}
+
+.report-cancel-btn:hover {
+    color: var(--report-text);
+    background: var(--report-panel-hover);
+    border-color: var(--report-olive);
+}
+
+/* Submit */
+
+.report-submit-btn {
+    color: #ffffff;
+    background: var(--report-orange);
+    border: 1px solid var(--report-orange);
+}
+
+.report-submit-btn:hover {
+    background: var(--report-orange-hover);
+    border-color: var(--report-orange-hover);
+    transform: translateY(-1px);
+}
+
+.report-submit-btn:active,
+.report-cancel-btn:active,
+.report-back-btn:active {
+    transform: translateY(0);
+}
+
+/* Back button */
+
+.report-back-btn {
+    color: #ffffff;
+    background: var(--report-orange);
+    border: 1px solid var(--report-orange);
+}
+
+.report-back-btn:hover {
+    background: var(--report-orange-hover);
+    border-color: var(--report-orange-hover);
+    transform: translateY(-1px);
+}
+
+/* =========================================
+   8. ERROR MESSAGE
+========================================= */
+
+.report-error {
+    margin-bottom: 22px;
+    padding: 15px 17px;
+    color: #f0a09a;
+    background: var(--report-danger-bg);
+    border: 1px solid var(--report-danger-border);
+    border-radius: 10px;
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+/* =========================================
+   9. SUCCESS MESSAGE
+========================================= */
+
+.report-success {
+    padding: 30px;
+    text-align: center;
+    background: var(--report-bg-soft);
+    border: 1px solid var(--report-success-border);
+    border-radius: 14px;
+}
+
+.report-success h2 {
+    margin: 0 0 12px;
+    color: var(--report-success);
+    font-size: 24px;
+    font-weight: 800;
+}
+
+.report-success p {
+    max-width: 460px;
+    margin: 0 auto 23px;
+    color: var(--report-text-soft);
+    font-size: 13px;
+    line-height: 1.8;
+}
+
+/* =========================================
+   10. KEYBOARD ACCESSIBILITY
+========================================= */
+
+.report-page a:focus-visible,
+.report-page button:focus-visible,
+.report-page select:focus-visible,
+.report-page textarea:focus-visible {
+    outline: 2px solid var(--report-orange);
+    outline-offset: 3px;
+}
+
+/* =========================================
+   11. RESPONSIVE DESIGN
+========================================= */
+
+@media (max-width: 650px) {
+    .report-page {
+        min-height: calc(100vh - 120px);
+        padding: 30px 14px 50px;
+    }
+
+    .report-container {
+        padding: 25px 19px;
+        border-radius: 14px;
+    }
+
+    .report-heading {
+        margin-bottom: 24px;
+    }
+
+    .report-heading h1 {
+        font-size: 32px;
+    }
+
+    .report-target {
+        padding: 17px;
+    }
+
+    .report-actions {
+        flex-direction: column-reverse;
+        align-items: stretch;
+    }
+
+    .report-cancel-btn,
+    .report-submit-btn {
+        width: 100%;
+    }
+
+    .report-success {
+        padding: 24px 18px;
+    }
+
+    .report-back-btn {
+        width: 100%;
+    }
+}
+
+@media (max-width: 380px) {
+    .report-container {
+        padding: 21px 15px;
+    }
+
+    .report-heading h1 {
+        font-size: 28px;
+    }
+
+    .report-field select,
+    .report-field textarea {
+        font-size: 12px;
+    }
+}
