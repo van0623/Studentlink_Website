@@ -158,7 +158,6 @@ if ($resource) {
 
     /*
      * Check the uploaded file.
-     * Only allow files inside uploads/resources/.
      */
     $storedPath = str_replace(
         '\\',
