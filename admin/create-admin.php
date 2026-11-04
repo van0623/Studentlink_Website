@@ -19,7 +19,7 @@ if ($sessionUserId <= 0) {
 }
 
 $authStmt = $conn->prepare("
-    SELECT id, role, status
+    SELECT id, full_name, role, status
     FROM users
     WHERE id = ?
     LIMIT 1
@@ -33,6 +33,7 @@ if (!$authStmt) {
 
 $authStmt->bind_param('i', $sessionUserId);
 $authStmt->execute();
+
 $currentAccount = $authStmt->get_result()->fetch_assoc();
 $authStmt->close();
 
@@ -45,6 +46,8 @@ if (
     exit;
 }
 
+$adminName = $currentAccount['full_name'] ?? 'Administrator';
+
 /* =========================================
    CSRF TOKEN
 ========================================= */
@@ -54,6 +57,37 @@ if (empty($_SESSION['csrf_token'])) {
 }
 
 $csrfToken = $_SESSION['csrf_token'];
+
+/* =========================================
+   ADMIN CREATION PASSCODE SECURITY
+========================================= */
+
+$adminCreationKeyHash = '$2y$10$42YzTYbRglmVR0alGo.qwu9I4EjlsCJs8BzV2u5fyT6b9b2xpW2uW';
+
+$adminKeyHashConfigured =
+    $adminCreationKeyHash !== '11111111' &&
+    password_get_info($adminCreationKeyHash)['algoName'] !== 'unknown';
+
+$adminKeySessionName = 'admin_creation_key_' . $sessionUserId;
+
+if (
+    !isset($_SESSION[$adminKeySessionName]) ||
+    !is_array($_SESSION[$adminKeySessionName])
+) {
+    $_SESSION[$adminKeySessionName] = [
+        'attempts' => 0,
+        'locked_until' => 0
+    ];
+}
+
+$adminKeyAttemptData = &$_SESSION[$adminKeySessionName];
+
+$adminKeyLocked =
+    (int) ($adminKeyAttemptData['locked_until'] ?? 0) > time();
+
+$adminKeyLockRemaining = $adminKeyLocked
+    ? (int) $adminKeyAttemptData['locked_until'] - time()
+    : 0;
 
 /* =========================================
    PAGE SETTINGS
@@ -79,8 +113,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $submittedToken = $_POST['csrf_token'] ?? '';
 
-    if (!hash_equals($csrfToken, $submittedToken)) {
+    if (!is_string($submittedToken) || !hash_equals($csrfToken, $submittedToken)) {
+
         $errors[] = 'Invalid request. Please refresh the page and try again.';
+
     } else {
 
         $action = $_POST['action'] ?? '';
@@ -90,6 +126,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ===================================== */
 
         if ($action === 'create') {
+
+            $enteredAdminKey = (string) ($_POST['admin_key'] ?? '');
+
+            if ($adminKeyLocked) {
+
+                $errors[] = 'Admin creation is temporarily locked. Please try again in '
+                    . max(1, (int) ceil($adminKeyLockRemaining / 60))
+                    . ' minute(s).';
+
+            } elseif (!$adminKeyHashConfigured) {
+
+                error_log('Admin creation passcode hash is missing or invalid.');
+                $errors[] = 'Admin creation is unavailable. Please configure the passcode hash in create-admin.php.';
+
+            } elseif (
+                $enteredAdminKey === '' ||
+                !password_verify($enteredAdminKey, $adminCreationKeyHash)
+            ) {
+
+                $adminKeyAttemptData['attempts'] =
+                    (int) ($adminKeyAttemptData['attempts'] ?? 0) + 1;
+
+                if ($adminKeyAttemptData['attempts'] >= 5) {
+
+                    $adminKeyAttemptData['attempts'] = 0;
+                    $adminKeyAttemptData['locked_until'] = time() + (15 * 60);
+
+                    $errors[] = 'Too many incorrect passcode attempts. Admin creation is locked for 15 minutes.';
+
+                } else {
+
+                    $remainingAttempts = 5 - $adminKeyAttemptData['attempts'];
+
+                    $errors[] = 'Incorrect Admin Creation Passcode. '
+                        . $remainingAttempts . ' attempt(s) remaining.';
+                }
+
+            } else {
+
+                $adminKeyAttemptData = [
+                    'attempts' => 0,
+                    'locked_until' => 0
+                ];
+            }
 
             $fullName = trim($_POST['full_name'] ?? '');
             $email = trim($_POST['email'] ?? '');
@@ -121,17 +201,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $errors[] = 'Passwords do not match.';
             }
 
+            /* Check duplicate email */
+
             if (empty($errors)) {
 
                 $checkStmt = $conn->prepare("
-                    SELECT id FROM users
+                    SELECT id
+                    FROM users
                     WHERE email = ?
                     LIMIT 1
                 ");
 
                 if (!$checkStmt) {
+
                     $errors[] = 'Unable to verify the email address.';
+
                 } else {
+
                     $checkStmt->bind_param('s', $email);
                     $checkStmt->execute();
                     $checkStmt->store_result();
@@ -143,6 +229,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $checkStmt->close();
                 }
             }
+
+            /* Insert the new admin account */
 
             if (empty($errors)) {
 
@@ -174,8 +262,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ");
 
                 if (!$insertStmt) {
+
                     error_log('Admin creation query failed: ' . $conn->error);
                     $errors[] = 'Unable to create the admin account.';
+
                 } else {
 
                     $insertStmt->bind_param(
@@ -193,20 +283,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     );
 
                     if ($insertStmt->execute()) {
+
                         $insertStmt->close();
+
+                        /* RECORD ADMIN ACTIVITY */
+
+                        notifyAdmins(
+                            $conn,
+                            'notify_registrations',
+                            'Admin ' . $adminName . ' created a new administrator account: ' . $fullName . '.',
+                            'create-admin.php',
+                            $sessionUserId
+                        );
 
                         header('Location: create-admin.php?success=created');
                         exit;
+
                     } else {
+
                         if ($insertStmt->errno === 1062) {
                             $errors[] = 'This email is already registered.';
                         } else {
                             error_log('Admin creation failed: ' . $insertStmt->error);
                             $errors[] = 'Could not create the admin account.';
                         }
-                    }
 
-                    $insertStmt->close();
+                        $insertStmt->close();
+                    }
                 }
             }
         }
@@ -245,7 +348,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $errors[] = 'New password must be at least 8 characters.';
             }
 
-            /* Check that the account exists and is an admin. */
+            /* Check that the account exists and is an admin */
+
             if (empty($errors)) {
 
                 $checkAdmin = $conn->prepare("
@@ -256,8 +360,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ");
 
                 if (!$checkAdmin) {
+
                     $errors[] = 'Unable to verify the administrator account.';
+
                 } else {
+
                     $checkAdmin->bind_param('i', $adminId);
                     $checkAdmin->execute();
                     $checkAdmin->store_result();
@@ -270,7 +377,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             }
 
-            /* Check duplicate email. */
+            /* Check duplicate email */
+
             if (empty($errors)) {
 
                 $emailStmt = $conn->prepare("
@@ -281,8 +389,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ");
 
                 if (!$emailStmt) {
+
                     $errors[] = 'Unable to verify the email address.';
+
                 } else {
+
                     $emailStmt->bind_param('si', $email, $adminId);
                     $emailStmt->execute();
                     $emailStmt->store_result();
@@ -295,7 +406,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             }
 
+            /* Update administrator account */
+
             if (empty($errors)) {
+
+                $updateStmt = null;
 
                 if ($password !== '') {
 
@@ -336,13 +451,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
 
                 if (!$updateStmt) {
+
                     $errors[] = 'Unable to prepare the account update.';
+
                 } elseif ($updateStmt->execute()) {
+
                     $updateStmt->close();
+
+                    /* RECORD ADMIN ACTIVITY */
+
+                    notifyAdmins(
+                        $conn,
+                        'notify_security',
+                        'Admin ' . $adminName . ' updated the administrator account: ' . $fullName . '.',
+                        'create-admin.php',
+                        $sessionUserId
+                    );
 
                     header('Location: create-admin.php?success=updated');
                     exit;
+
                 } else {
+
                     error_log('Admin update failed: ' . $updateStmt->error);
                     $errors[] = 'Could not update the administrator account.';
                     $updateStmt->close();
@@ -353,7 +483,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         /* =====================================
-           SOFT DELETE / RESTORE ADMIN
+           SUSPEND / RESTORE ADMIN
         ===================================== */
 
         elseif ($action === 'change_status') {
@@ -361,46 +491,119 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $adminId = (int) ($_POST['admin_id'] ?? 0);
             $newStatus = $_POST['new_status'] ?? '';
 
+            $targetAdmin = null;
+
             if ($adminId <= 0) {
+
                 $errors[] = 'Invalid administrator account.';
-            } elseif ($adminId === $sessionUserId && $newStatus === 'Suspended') {
+
+            } elseif (
+                $adminId === $sessionUserId &&
+                $newStatus === 'Suspended'
+            ) {
+
                 $errors[] = 'You cannot suspend your own administrator account.';
+
             } elseif (!in_array($newStatus, ['Active', 'Suspended'], true)) {
+
                 $errors[] = 'Invalid account status.';
             }
 
+            /* Verify the target administrator */
+
             if (empty($errors)) {
 
-                $statusStmt = $conn->prepare("
-                    UPDATE users
-                    SET status = ?
+                $checkAdmin = $conn->prepare("
+                    SELECT id, full_name, status
+                    FROM users
                     WHERE id = ? AND role = 'admin'
+                    LIMIT 1
                 ");
 
-                if (!$statusStmt) {
-                    $errors[] = 'Unable to prepare the status update.';
+                if (!$checkAdmin) {
+
+                    $errors[] = 'Unable to verify the administrator account.';
+
                 } else {
 
-                    $statusStmt->bind_param('si', $newStatus, $adminId);
+                    $checkAdmin->bind_param('i', $adminId);
+                    $checkAdmin->execute();
 
-                    if ($statusStmt->execute() && $statusStmt->affected_rows >= 0) {
-                        $statusStmt->close();
+                    $targetAdmin = $checkAdmin->get_result()->fetch_assoc();
+                    $checkAdmin->close();
 
-                        $message = $newStatus === 'Suspended'
-                            ? 'suspended'
-                            : 'restored';
+                    if (!$targetAdmin) {
+                        $errors[] = 'Administrator account not found.';
+                    }
+                }
+            }
 
-                        header('Location: create-admin.php?success=' . $message);
-                        exit;
+            /* Update administrator status */
+
+            if (empty($errors)) {
+
+                if ($targetAdmin['status'] === $newStatus) {
+
+                    $errors[] = 'The administrator account already has this status.';
+
+                } else {
+
+                    $statusStmt = $conn->prepare("
+                        UPDATE users
+                        SET status = ?
+                        WHERE id = ? AND role = 'admin'
+                    ");
+
+                    if (!$statusStmt) {
+
+                        $errors[] = 'Unable to prepare the status update.';
+
                     } else {
-                        $errors[] = 'Could not update the administrator status.';
-                        $statusStmt->close();
+
+                        $statusStmt->bind_param('si', $newStatus, $adminId);
+
+                        if ($statusStmt->execute()) {
+
+                            $changed = $statusStmt->affected_rows > 0;
+                            $statusStmt->close();
+
+                            if ($changed) {
+
+                                /* RECORD ADMIN ACTIVITY */
+
+                                $activityMessage = 'Admin ' . $adminName . ' ' .
+                                    ($newStatus === 'Suspended' ? 'suspended' : 'restored') .
+                                    ' administrator account: ' . $targetAdmin['full_name'] . '.';
+
+                                notifyAdmins(
+                                    $conn,
+                                    'notify_security',
+                                    $activityMessage,
+                                    'create-admin.php',
+                                    $sessionUserId
+                                );
+                            }
+
+                            $message = $newStatus === 'Suspended'
+                                ? 'suspended'
+                                : 'restored';
+
+                            header('Location: create-admin.php?success=' . $message);
+                            exit;
+
+                        } else {
+
+                            error_log('Admin status update failed: ' . $statusStmt->error);
+                            $errors[] = 'Could not update the administrator status.';
+                            $statusStmt->close();
+                        }
                     }
                 }
             }
         }
 
         else {
+
             $errors[] = 'Invalid action.';
         }
     }
@@ -437,6 +640,7 @@ if ($editId > 0) {
     ");
 
     if ($editStmt) {
+
         $editStmt->bind_param('i', $editId);
         $editStmt->execute();
 
@@ -445,9 +649,17 @@ if ($editId > 0) {
     }
 
     if ($editAdmin) {
-        $fullName = $fullName !== '' ? $fullName : $editAdmin['full_name'];
-        $email = $email !== '' ? $email : $editAdmin['email'];
+
+        $fullName = $fullName !== ''
+            ? $fullName
+            : $editAdmin['full_name'];
+
+        $email = $email !== ''
+            ? $email
+            : $editAdmin['email'];
+
     } elseif (empty($errors)) {
+
         $errors[] = 'Administrator account not found.';
     }
 }
@@ -466,6 +678,7 @@ $adminStmt = $conn->prepare("
 ");
 
 if ($adminStmt) {
+
     $adminStmt->execute();
     $adminResult = $adminStmt->get_result();
 
@@ -474,7 +687,9 @@ if ($adminStmt) {
     }
 
     $adminStmt->close();
+
 } else {
+
     error_log('Admin list query failed: ' . $conn->error);
     $errors[] = 'Unable to load administrator accounts.';
 }
@@ -542,7 +757,11 @@ include __DIR__ . '/../includes/admin-header.php';
         </p>
     </div>
 
-    <form method="post" action="create-admin.php<?= $editAdmin ? '?edit=' . (int) $editAdmin['id'] : '' ?>" class="create-admin-form">
+    <form
+        method="post"
+        action="create-admin.php<?= $editAdmin ? '?edit=' . (int) $editAdmin['id'] : '' ?>"
+        class="create-admin-form"
+    >
 
         <input type="hidden" name="csrf_token" value="<?= e($csrfToken) ?>">
 
@@ -601,12 +820,15 @@ include __DIR__ . '/../includes/admin-header.php';
                     name="password"
                     minlength="8"
                     autocomplete="new-password"
-                    placeholder="<?= $editAdmin ? 'Leave blank to keep current password' : 'At least 8 characters' ?>"
+                    placeholder="<?= $editAdmin
+                        ? 'Leave blank to keep current password'
+                        : 'At least 8 characters' ?>"
                     <?= $editAdmin ? '' : 'required' ?>
                 >
             </div>
 
             <?php if (!$editAdmin): ?>
+
                 <div class="field">
                     <label for="confirm_password">Confirm Password</label>
                     <input
@@ -619,6 +841,23 @@ include __DIR__ . '/../includes/admin-header.php';
                         required
                     >
                 </div>
+
+                <div class="field">
+                    <label for="admin_key">Admin Creation Passcode</label>
+                    <input
+                        type="password"
+                        id="admin_key"
+                        name="admin_key"
+                        autocomplete="off"
+                        placeholder="Enter the admin creation passcode"
+                        maxlength="256"
+                        required
+                    >
+                    <small>
+                        Required to create a new administrator account.
+                    </small>
+                </div>
+
             <?php endif; ?>
 
         </div>
@@ -630,13 +869,17 @@ include __DIR__ . '/../includes/admin-header.php';
             </button>
 
             <?php if ($editAdmin): ?>
+
                 <a class="btn-ghost" href="create-admin.php">
                     Cancel Editing
                 </a>
+
             <?php else: ?>
+
                 <a class="btn-ghost" href="dashboard.php">
                     Cancel
                 </a>
+
             <?php endif; ?>
 
         </div>
@@ -738,7 +981,11 @@ include __DIR__ . '/../includes/admin-header.php';
                                                 action="create-admin.php"
                                                 onsubmit="return confirm('Are you sure you want to suspend this administrator?');"
                                             >
-                                                <input type="hidden" name="csrf_token" value="<?= e($csrfToken) ?>">
+                                                <input
+                                                    type="hidden"
+                                                    name="csrf_token"
+                                                    value="<?= e($csrfToken) ?>"
+                                                >
                                                 <input type="hidden" name="action" value="change_status">
                                                 <input type="hidden" name="admin_id" value="<?= (int) $admin['id'] ?>">
                                                 <input type="hidden" name="new_status" value="Suspended">
@@ -761,7 +1008,11 @@ include __DIR__ . '/../includes/admin-header.php';
                                             action="create-admin.php"
                                             onsubmit="return confirm('Restore this administrator account?');"
                                         >
-                                            <input type="hidden" name="csrf_token" value="<?= e($csrfToken) ?>">
+                                            <input
+                                                type="hidden"
+                                                name="csrf_token"
+                                                value="<?= e($csrfToken) ?>"
+                                            >
                                             <input type="hidden" name="action" value="change_status">
                                             <input type="hidden" name="admin_id" value="<?= (int) $admin['id'] ?>">
                                             <input type="hidden" name="new_status" value="Active">

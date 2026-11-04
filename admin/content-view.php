@@ -6,6 +6,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
 require_once __DIR__ . '/../db_connect.php';
 require_once __DIR__ . '/../includes/functions.php';
+
 /*
 |--------------------------------------------------------------------------
 | ADMIN AUTHENTICATION
@@ -20,7 +21,7 @@ if (empty($_SESSION['user_id'])) {
 $adminId = (int) $_SESSION['user_id'];
 
 $adminStmt = $conn->prepare("
-    SELECT id, role, status
+    SELECT id, full_name, role, status
     FROM users
     WHERE id = ?
     LIMIT 1
@@ -48,6 +49,8 @@ if (
     header('Location: ../login.php');
     exit;
 }
+
+$adminName = $admin['full_name'] ?? 'Administrator';
 
 /*
 |--------------------------------------------------------------------------
@@ -159,6 +162,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $currentStatus = ($action === 'remove') ? 'Active' : 'Removed';
 
     $table = $config['table'];
+    $titleColumn = $config['title'];
+
+    /*
+    |--------------------------------------------------------------------------
+    | GET CONTENT TITLE BEFORE UPDATING
+    |--------------------------------------------------------------------------
+    */
+
+    $contentStmt = $conn->prepare("
+        SELECT {$titleColumn} AS title
+        FROM {$table}
+        WHERE id = ?
+        AND status = ?
+        LIMIT 1
+    ");
+
+    if (!$contentStmt) {
+        error_log('Content lookup error: ' . $conn->error);
+        exit('Unable to verify content details.');
+    }
+
+    $contentStmt->bind_param(
+        'is',
+        $contentId,
+        $currentStatus
+    );
+
+    $contentStmt->execute();
+
+    $existingContent = $contentStmt->get_result()->fetch_assoc();
+
+    $contentStmt->close();
+
+    /*
+    |--------------------------------------------------------------------------
+    | UPDATE CONTENT STATUS
+    |--------------------------------------------------------------------------
+    */
 
     $updateStmt = $conn->prepare("
         UPDATE {$table}
@@ -189,11 +230,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $affectedRows = $updateStmt->affected_rows;
     $updateStmt->close();
 
+    /*
+    |--------------------------------------------------------------------------
+    | SEND ADMIN ACTIVITY NOTIFICATION
+    |--------------------------------------------------------------------------
+    */
+
     if ($affectedRows > 0) {
+
         $_SESSION['content_message'] = (
             $action === 'remove'
         ) ? 'Content removed successfully.' : 'Content restored successfully.';
+
+        $contentTitle = $existingContent['title'] ?? 'Untitled content';
+
+        $activityMessage = 'Admin ' . $adminName . ' ' .
+            ($action === 'remove' ? 'removed' : 'restored') .
+            ' the ' . strtolower($contentType) .
+            ': ' . $contentTitle . '.';
+
+        notifyAdmins(
+            $conn,
+            'notify_content',
+            $activityMessage,
+            'content-view.php?id=' . $contentId .
+            '&type=' . urlencode($contentType),
+            $adminId
+        );
+
     } else {
+
         $_SESSION['content_message'] = (
             $action === 'remove'
         ) ? 'Content was already removed or could not be found.' :
@@ -424,11 +490,9 @@ $formattedDate = 'Not available';
 
 if (!$notFound && !empty($content)) {
 
-
     $statusClass = strtolower($content['status']) === 'active'
         ? 'active'
         : 'removed';
-
 
     if (!empty($content['content_date'])) {
         $timestamp = strtotime($content['content_date']);

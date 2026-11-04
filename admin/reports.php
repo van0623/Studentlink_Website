@@ -1,3 +1,4 @@
+
 <?php
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -48,6 +49,8 @@ if (
 
 $_SESSION['full_name'] = $admin['full_name'];
 $_SESSION['user'] = $admin['full_name'];
+
+$adminName = $admin['full_name'] ?? 'Administrator';
 
 /* =====================================================
    CSRF TOKEN
@@ -173,14 +176,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     );
 
                     if ($updateStmt->execute()) {
+
+                        $affectedRows = $updateStmt->affected_rows;
                         $updateStmt->close();
-                        redirectToReports('updated');
+
+                        if ($affectedRows > 0) {
+
+                            /*
+                             * NOTIFY ADMINS ABOUT REPORT UPDATE
+                             */
+
+                            notifyAdmins(
+                                $conn,
+                                'notify_reports',
+                                'Admin ' . $adminName .
+                                ' updated Report #' . $reportId .
+                                ' to status: ' . $newStatus . '.',
+                                'reports.php',
+                                $adminId
+                            );
+
+                            redirectToReports('updated');
+
+                        } else {
+                            $error = 'No changes were made to the report, or the report could not be found.';
+                        }
+
+                    } else {
+
+                        error_log('Report update failed: ' . $updateStmt->error);
+                        $updateStmt->close();
+
+                        $error = 'Unable to update the report.';
                     }
-
-                    error_log('Report update failed: ' . $updateStmt->error);
-                    $updateStmt->close();
-
-                    $error = 'Unable to update the report.';
                 }
             }
 
@@ -209,14 +237,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $archiveStmt->bind_param('ii', $adminId, $reportId);
 
                 if ($archiveStmt->execute()) {
+
+                    $affectedRows = $archiveStmt->affected_rows;
                     $archiveStmt->close();
-                    redirectToReports('archived');
+
+                    if ($affectedRows > 0) {
+
+                        /*
+                         * NOTIFY ADMINS ABOUT REPORT ARCHIVE
+                         */
+
+                        notifyAdmins(
+                            $conn,
+                            'notify_reports',
+                            'Admin ' . $adminName .
+                            ' archived Report #' . $reportId . '.',
+                            'reports.php?view=archived',
+                            $adminId
+                        );
+
+                        redirectToReports('archived');
+
+                    } else {
+                        $error = 'The report was already archived or could not be found.';
+                    }
+
+                } else {
+
+                    error_log('Report archive failed: ' . $archiveStmt->error);
+                    $archiveStmt->close();
+
+                    $error = 'Unable to archive the report.';
                 }
-
-                error_log('Report archive failed: ' . $archiveStmt->error);
-                $archiveStmt->close();
-
-                $error = 'Unable to archive the report.';
             }
 
         /*
@@ -242,14 +294,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $restoreStmt->bind_param('i', $reportId);
 
                 if ($restoreStmt->execute()) {
+
+                    $affectedRows = $restoreStmt->affected_rows;
                     $restoreStmt->close();
-                    redirectToReports('restored');
+
+                    if ($affectedRows > 0) {
+
+                        /*
+                         * NOTIFY ADMINS ABOUT REPORT RESTORE
+                         */
+
+                        notifyAdmins(
+                            $conn,
+                            'notify_reports',
+                            'Admin ' . $adminName .
+                            ' restored Report #' . $reportId . '.',
+                            'reports.php',
+                            $adminId
+                        );
+
+                        redirectToReports('restored');
+
+                    } else {
+                        $error = 'The report was already active or could not be found.';
+                    }
+
+                } else {
+
+                    error_log('Report restore failed: ' . $restoreStmt->error);
+                    $restoreStmt->close();
+
+                    $error = 'Unable to restore the report.';
                 }
-
-                error_log('Report restore failed: ' . $restoreStmt->error);
-                $restoreStmt->close();
-
-                $error = 'Unable to restore the report.';
             }
 
         } else {

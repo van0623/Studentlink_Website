@@ -19,7 +19,7 @@ if (empty($_SESSION['user_id'])) {
 $adminId = (int) $_SESSION['user_id'];
 
 $adminStmt = $conn->prepare("
-    SELECT id, role, status
+    SELECT id, full_name, role, status
     FROM users
     WHERE id = ?
     LIMIT 1
@@ -49,6 +49,9 @@ if (
     header('Location: ../login.php');
     exit;
 }
+
+/* Administrator name for notifications */
+$adminName = $currentAdmin['full_name'] ?? 'Administrator';
 
 /* =========================================
    GET SELECTED STUDENT ID
@@ -89,7 +92,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $action = $_POST['action'] ?? '';
 
+    if (!in_array($action, ['suspend', 'activate'], true)) {
+        header('Location: user-view.php?id=' . $userId);
+        exit;
+    }
+
+    /* Get student information before changing status. */
+    $studentStmt = $conn->prepare("
+        SELECT id, full_name, status
+        FROM users
+        WHERE id = ?
+          AND LOWER(role) = 'student'
+        LIMIT 1
+    ");
+
+    if (!$studentStmt) {
+        error_log('Student lookup preparation error: ' . $conn->error);
+        http_response_code(500);
+        exit('Unable to process this request right now.');
+    }
+
+    $studentStmt->bind_param('i', $userId);
+    $studentStmt->execute();
+
+    $student = $studentStmt->get_result()->fetch_assoc();
+
+    $studentStmt->close();
+
+    if (!$student) {
+        header('Location: users.php?not_found=1');
+        exit;
+    }
+
+    /* Determine the new status. */
     if ($action === 'suspend') {
+
+        $newStatus = 'Suspended';
 
         $updateStmt = $conn->prepare("
             UPDATE users
@@ -99,7 +137,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               AND LOWER(status) = 'active'
         ");
 
-    } elseif ($action === 'activate') {
+    } else {
+
+        $newStatus = 'Active';
 
         $updateStmt = $conn->prepare("
             UPDATE users
@@ -108,10 +148,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               AND LOWER(role) = 'student'
               AND LOWER(status) = 'suspended'
         ");
-
-    } else {
-        header('Location: user-view.php?id=' . $userId);
-        exit;
     }
 
     if (!$updateStmt) {
@@ -130,7 +166,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit('Unable to update this account right now.');
     }
 
+    $affectedRows = $updateStmt->affected_rows;
+
     $updateStmt->close();
+
+    if ($affectedRows > 0) {
+
+        /* =====================================
+           ADMIN NOTIFICATION: STATUS CHANGED
+        ===================================== */
+
+        $activityMessage = 'Admin ' . $adminName . ' ' .
+            ($newStatus === 'Suspended' ? 'suspended' : 'reactivated') .
+            ' the student account: ' . $student['full_name'] . '.';
+
+        notifyAdmins(
+            $conn,
+            'notify_security',
+            $activityMessage,
+            'user-view.php?id=' . $userId,
+            $adminId
+        );
+
+    }
 
     header('Location: user-view.php?id=' . $userId . '&updated=1');
     exit;
@@ -215,12 +273,10 @@ if (!$u) {
     exit;
 }
 
-
 require_once __DIR__ . '/../includes/admin-header.php';
 ?>
 
 <link rel="stylesheet" href="user-view.css">
-
 
 <main class="admin-user-view">
 

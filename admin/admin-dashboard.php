@@ -261,7 +261,6 @@ if (
 |--------------------------------------------------------------------------
 | Recent content
 |--------------------------------------------------------------------------
-| Reads recent records from available listing/content tables.
 */
 
 $recentContent = [];

@@ -685,7 +685,7 @@ body {
 }
 
 /* =========================================
-   RECENT CONTENT - COMPACT PANEL LAYOUT
+   RECENT CONTENT 
 ========================================= */
 
 .recent-content-grid {
@@ -715,33 +715,8 @@ body {
     transition: background 0.2s ease;
 }
 
-.content-card + .content-card {
-    border-top: 1px solid var(--line);
-}
-
 .content-card:hover {
     background: var(--panel-hover);
-}
-
-.content-card::before {
-    position: absolute;
-    top: 12px;
-    bottom: 12px;
-    left: 0;
-    width: 2px;
-    background: var(--olive);
-    border-radius: 0 2px 2px 0;
-    content: "";
-    transition: background 0.2s ease;
-}
-
-.content-card:nth-child(4n + 1)::before { background: var(--orange); }
-.content-card:nth-child(4n + 2)::before { background: var(--olive-light); }
-.content-card:nth-child(4n + 3)::before { background: #b7a17e; }
-.content-card:nth-child(4n + 4)::before { background: #8d9a79; }
-
-.content-card:hover::before {
-    background: var(--orange-light);
 }
 
 .content-card-top {

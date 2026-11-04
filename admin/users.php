@@ -19,7 +19,7 @@ if ($adminId <= 0) {
 }
 
 $adminStmt = $conn->prepare("
-    SELECT id, role, status
+    SELECT id, full_name, role, status
     FROM users
     WHERE id = ?
     LIMIT 1
@@ -43,6 +43,9 @@ if (
     exit;
 }
 
+/* Administrator name for notifications */
+$adminName = $adminAccount['full_name'] ?? 'Administrator';
+
 /* =========================================
    CSRF TOKEN
 ========================================= */
@@ -52,7 +55,6 @@ if (empty($_SESSION['csrf_token'])) {
 }
 
 $csrfToken = $_SESSION['csrf_token'];
-
 
 $success = '';
 $error = '';
@@ -93,6 +95,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $error = 'Full name is too long.';
             } elseif (strlen($email) > 255) {
                 $error = 'Email address is too long.';
+            } elseif ($userId > 0 && $password !== '' && strlen($password) < 8) {
+                $error = 'Password must contain at least 8 characters.';
             } else {
 
                 /* Check duplicate email. */
@@ -124,6 +128,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 if ($emailExists) {
                     $error = 'That email address is already registered.';
+
                 } elseif ($userId > 0) {
 
                     /* Make sure the selected account is a student. */
@@ -143,6 +148,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     if (!$studentExists) {
                         $error = 'Student account not found.';
+
                     } else {
 
                         $updateStmt = $conn->prepare("
@@ -166,23 +172,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                         if ($updateStmt->execute()) {
 
+                            $updateStmt->close();
+
                             /* Update password only when provided. */
                             if ($password !== '') {
 
-                                if (strlen($password) < 8) {
-                                    $error = 'Password must contain at least 8 characters.';
-                                } else {
-                                    $passwordHash = password_hash(
-                                        $password,
-                                        PASSWORD_DEFAULT
-                                    );
+                                $passwordHash = password_hash(
+                                    $password,
+                                    PASSWORD_DEFAULT
+                                );
 
-                                    $passwordStmt = $conn->prepare("
-                                        UPDATE users
-                                        SET password_hash = ?
-                                        WHERE id = ?
-                                        AND LOWER(role) = 'student'
-                                    ");
+                                $passwordStmt = $conn->prepare("
+                                    UPDATE users
+                                    SET password_hash = ?
+                                    WHERE id = ?
+                                    AND LOWER(role) = 'student'
+                                ");
+
+                                if (!$passwordStmt) {
+                                    $error = 'Unable to prepare the password update.';
+                                } else {
 
                                     $passwordStmt->bind_param(
                                         'si',
@@ -199,15 +208,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             }
 
                             if ($error === '') {
+
+                                /* ADMIN NOTIFICATION: STUDENT UPDATED */
+                                notifyAdmins(
+                                    $conn,
+                                    'notify_security',
+                                    'Admin ' . $adminName .
+                                    ' updated the student account: ' . $fullName . '.',
+                                    'users.php',
+                                    $adminId
+                                );
+
                                 header('Location: users.php?success=updated');
                                 exit;
                             }
 
                         } else {
                             $error = 'Unable to update the student account.';
+                            $updateStmt->close();
                         }
-
-                        $updateStmt->close();
                     }
 
                 } else {
@@ -216,8 +235,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     if ($password === '') {
                         $error = 'A password is required for a new account.';
+
                     } elseif (strlen($password) < 8) {
                         $error = 'Password must contain at least 8 characters.';
+
                     } else {
 
                         $passwordHash = password_hash(
@@ -253,15 +274,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         );
 
                         if ($insertStmt->execute()) {
+
                             $insertStmt->close();
+
+                            /* ADMIN NOTIFICATION: STUDENT CREATED */
+                            notifyAdmins(
+                                $conn,
+                                'notify_registrations',
+                                'Admin ' . $adminName .
+                                ' created a new student account: ' . $fullName . '.',
+                                'users.php',
+                                $adminId
+                            );
 
                             header('Location: users.php?success=created');
                             exit;
+
                         } else {
                             $error = 'Unable to create the student account.';
+                            $insertStmt->close();
                         }
-
-                        $insertStmt->close();
                     }
                 }
             }
@@ -276,42 +308,79 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $userId = (int) ($_POST['user_id'] ?? 0);
             $newStatus = $_POST['new_status'] ?? '';
 
-            if (!in_array($newStatus, ['Active', 'Suspended'], true)) {
+            if ($userId <= 0) {
+                $error = 'Invalid student account.';
+            } elseif (!in_array($newStatus, ['Active', 'Suspended'], true)) {
                 $error = 'Invalid account status.';
             } else {
 
-                $statusStmt = $conn->prepare("
-                    UPDATE users
-                    SET status = ?
+                /* Get the student name before changing status. */
+                $studentNameStmt = $conn->prepare("
+                    SELECT full_name
+                    FROM users
                     WHERE id = ?
                     AND LOWER(role) = 'student'
+                    LIMIT 1
                 ");
 
-                $statusStmt->bind_param(
-                    'si',
-                    $newStatus,
-                    $userId
-                );
+                $studentNameStmt->bind_param('i', $userId);
+                $studentNameStmt->execute();
 
-                if ($statusStmt->execute()) {
+                $studentData = $studentNameStmt->get_result()->fetch_assoc();
+                $studentNameStmt->close();
 
-                    if ($statusStmt->affected_rows > 0) {
-                        $statusStmt->close();
+                if (!$studentData) {
+                    $error = 'Student account not found.';
+                } else {
 
-                        header(
-                            'Location: users.php?success=' .
-                            ($newStatus === 'Suspended' ? 'suspended' : 'restored')
-                        );
-                        exit;
+                    $statusStmt = $conn->prepare("
+                        UPDATE users
+                        SET status = ?
+                        WHERE id = ?
+                        AND LOWER(role) = 'student'
+                    ");
+
+                    $statusStmt->bind_param(
+                        'si',
+                        $newStatus,
+                        $userId
+                    );
+
+                    if ($statusStmt->execute()) {
+
+                        if ($statusStmt->affected_rows > 0) {
+
+                            $statusStmt->close();
+
+                            /* ADMIN NOTIFICATION: STATUS CHANGED */
+                            $activityMessage = 'Admin ' . $adminName . ' ' .
+                                ($newStatus === 'Suspended' ? 'suspended' : 'reactivated') .
+                                ' the student account: ' . $studentData['full_name'] . '.';
+
+                            notifyAdmins(
+                                $conn,
+                                'notify_security',
+                                $activityMessage,
+                                'users.php',
+                                $adminId
+                            );
+
+                            header(
+                                'Location: users.php?success=' .
+                                ($newStatus === 'Suspended' ? 'suspended' : 'restored')
+                            );
+                            exit;
+
+                        } else {
+                            $error = 'No account was updated. Check the selected student.';
+                        }
+
                     } else {
-                        $error = 'No account was updated. Check the selected student.';
+                        $error = 'Unable to change the account status.';
                     }
 
-                } else {
-                    $error = 'Unable to change the account status.';
+                    $statusStmt->close();
                 }
-
-                $statusStmt->close();
             }
         }
     }

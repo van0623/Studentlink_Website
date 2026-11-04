@@ -1,7 +1,3 @@
-/* =========================================
-   NOTIFICATIONS.CSS
-   Clean + calm: solid panels, one accent color
-========================================= */
 
 :root {
     --bg: #161714;
@@ -35,416 +31,315 @@
     --f-body: 'Source Sans 3', system-ui, -apple-system, 'Segoe UI', sans-serif;
 }
 
-* { box-sizing: border-box; }
+.wrap.narrow {
+    --bg: #0c0d0a;
+    --panel: #151611;
+    --panel-hover: #1b1c16;
+    --panel-deep: #0f100c;
+    --line: #292a22;
+    --line-light: #393a2f;
+    --stone: #f3f0e8;
+    --text: #e8e5dc;
+    --muted: #c0c0b2;
+    --faint: #aaa99a;
+    --orange: #d94f16;
+    --orange-light: #ff895c;
+    --orange-soft: rgba(217, 79, 22, 0.12);
+    --olive: #85876d;
+    --olive-light: #c9cbb0;
+    --f-head: 'Big Shoulders Display', 'Arial Narrow', Impact, sans-serif;
+    --f-body: 'Source Sans 3', system-ui, -apple-system, 'Segoe UI', sans-serif;
 
-html { min-height: 100%; scroll-behavior: smooth; }
-
-body {
-    margin: 0;
-    min-height: 100vh;
+    width: 100%;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 28px 16px 70px;
     color: var(--text);
-    background: var(--bg);
     font-family: var(--f-body);
-    font-size: 16px;
-    line-height: 1.6;
-    -webkit-font-smoothing: antialiased;
 }
 
-h1, h2, h3, h4 {
-    margin-top: 0;
+/* Dark page background behind the notifications page */
+body:has(.wrap.narrow .notes) {
+    background-color: #0c0d0a;
+}
+
+.wrap.narrow *,
+.wrap.narrow *::before,
+.wrap.narrow *::after { box-sizing: border-box; }
+
+/* ---------- HEADER ---------- */
+
+.wrap.narrow .page-head.head-row {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    margin: 0 0 18px;
+    padding: 0 4px 18px;
+}
+
+.wrap.narrow .page-head h1 {
+    margin: 0 0 6px;
     color: var(--stone);
     font-family: var(--f-head);
-    font-weight: 800;
+    font-size: clamp(34px, 5vw, 46px);
+    font-weight: 700;
     line-height: 1;
     text-transform: uppercase;
 }
 
-p { margin-top: 0; }
-
-a {
-    color: var(--orange-light);
-    text-decoration: none;
-    transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
-}
-
-button, input, select, textarea { font: inherit; }
-button { cursor: pointer; }
-
-::selection { color: var(--white); background: var(--orange); }
-
-a:focus-visible,
-button:focus-visible {
-    outline: 2px solid var(--orange-light);
-    outline-offset: 3px;
-}
-
-/* Visually hidden text for screen readers */
-.sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    margin: -1px;
-    padding: 0;
-    overflow: hidden;
-    border: 0;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-}
-
-
-/* =========================================
-   PAGE CONTAINER (narrow + centered)
-========================================= */
-
-.wrap {
-    width: min(780px, calc(100% - 64px));
-    margin: 40px auto 70px;
-}
-
-
-/* ---------- PAGE HEADING ---------- */
-
-.page-head {
-    margin-bottom: 24px;
-    padding-bottom: 24px;
-    border-bottom: 1px solid var(--line);
-}
-
-.head-row {
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 24px;
-}
-
-.page-head h1 {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    margin-bottom: 10px;
-    font-size: clamp(44px, 5.5vw, 66px);
-    letter-spacing: -0.3px;
-}
-
-.page-head h1::before {
-    width: 10px;
-    height: 0.8em;
+.wrap.narrow .page-head h1::before {
+    display: block;
+    width: 34px;
+    height: 3px;
+    margin-bottom: 12px;
     background: var(--orange);
-    border-radius: 3px;
+    border-radius: 2px;
     content: "";
-    transform: skew(-12deg);
 }
 
-.page-head .meta {
-    margin-bottom: 0;
-    font-size: 15px;
-}
-
-.page-head form {
+.wrap.narrow .meta {
     margin: 0;
-}
-
-
-/* ---------- GENERAL MUTED TEXT ---------- */
-
-.meta {
     color: var(--muted);
     font-size: 14px;
-    line-height: 1.7;
 }
 
+/* "Mark all as read" */
+.wrap.narrow .head-row form { flex-shrink: 0; margin: 0; }
 
-/* ---------- "MARKED AS READ" MESSAGE ---------- */
-
-p.meta[role="status"] {
-    margin: 0 0 18px;
-    padding: 13px 18px;
-    color: var(--success);
-    background: var(--success-bg);
-    border: 1px solid rgba(93, 214, 44, 0.22);
-    border-left: 3px solid #5dd62c;
-    border-radius: 12px;
-    font-size: 14px;
-}
-
-
-/* ---------- BUTTON ---------- */
-
-.btn {
+.wrap.narrow .btn-ghost {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-height: 46px;
-    padding: 10px 20px;
+    min-height: 38px;
+    padding: 8px 16px;
+    color: var(--orange-light);
+    background: var(--orange-soft);
     border: 1px solid transparent;
-    border-radius: 12px;
+    border-radius: 8px;
+    font-family: var(--f-body);
     font-size: 13.5px;
-    font-weight: 800;
-    line-height: 1.2;
+    font-weight: 700;
     white-space: nowrap;
     cursor: pointer;
-    transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 
-.btn:hover:not(:disabled) { transform: translateY(-1px); }
-
-.btn-ghost {
-    color: var(--stone);
-    background: transparent;
-    border-color: var(--line-light);
-}
-
-.btn-ghost:hover:not(:disabled) {
-    color: var(--white);
+.wrap.narrow .btn-ghost:hover:not(:disabled) {
+    color: #fff;
     background: var(--orange);
-    border-color: var(--orange);
 }
 
-.btn:disabled {
-    opacity: 0.4;
+.wrap.narrow .btn-ghost:focus-visible,
+.wrap.narrow .notification-link:focus-visible {
+    outline: 2px solid var(--orange-light);
+    outline-offset: 2px;
+}
+
+.wrap.narrow .btn-ghost:disabled {
+    color: var(--faint);
+    background: rgba(243, 240, 232, 0.04);
     cursor: not-allowed;
 }
 
+/* Success message */
+.wrap.narrow > p.meta[role="status"] {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 14px;
+    padding: 12px 16px;
+    color: #d7e4c4;
+    background: rgba(141, 154, 121, 0.10);
+    border: 1px solid rgba(141, 154, 121, 0.30);
+    border-left: 3px solid #8d9a79;
+    border-radius: 10px;
+    font-weight: 600;
+}
 
-/* =========================================
-   NOTIFICATION LIST (one panel)
-========================================= */
+/* ---------- LIST CARD ---------- */
 
-.notes {
+.wrap.narrow .notes {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
     margin: 0;
-    padding: 0;
-    overflow: hidden;
+    padding: 8px;
     list-style: none;
     background: var(--panel);
     border: 1px solid var(--line);
-    border-radius: var(--radius);
+    border-radius: 16px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.30);
 }
 
-.note {
+/* ---------- NOTIFICATION ROW ---------- */
+
+.wrap.narrow .note {
     position: relative;
     display: flex;
-    align-items: flex-start;
-    gap: 16px;
-    padding: 20px 24px;
-    transition: background 0.2s ease;
-}
-
-.note + .note {
-    border-top: 1px solid var(--line);
-}
-
-.note:hover { background: var(--panel-hover); }
-
-/* Read: calm + slightly dimmer */
-.note .dot {
-    flex-shrink: 0;
-    width: 9px;
-    height: 9px;
-    margin-top: 8px;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
     background: transparent;
-    border: 1.5px solid var(--line-light);
+    border-radius: 10px;
+    transition: background 0.15s ease;
+}
+
+.wrap.narrow .note:hover { background: var(--panel-hover); }
+
+/* Unread rows get a soft orange tint, like Facebook's blue highlight */
+.wrap.narrow .note.unread { background: var(--orange-soft); }
+.wrap.narrow .note.unread:hover { background: rgba(217, 79, 22, 0.18); }
+
+/* ---------- AVATAR ---------- */
+
+.wrap.narrow .notification-avatar {
+    flex-shrink: 0;
+    width: 56px;
+    height: 56px;
+}
+
+.wrap.narrow .notification-avatar img,
+.wrap.narrow .avatar-fallback {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
     border-radius: 50%;
 }
 
-.note > div {
+.wrap.narrow .notification-avatar img {
+    object-fit: cover;
+    background: var(--panel-deep);
+    border: 1px solid var(--line-light);
+}
+
+.wrap.narrow .avatar-fallback {
+    color: var(--stone);
+    background: rgba(133, 135, 109, 0.30);
+    border: 1px solid rgba(183, 185, 155, 0.22);
+    font-family: var(--f-head);
+    font-size: 22px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+/* ---------- CONTENT ---------- */
+
+.wrap.narrow .notification-content {
     flex: 1;
     min-width: 0;
 }
 
-.note p {
-    margin: 0;
-    color: var(--muted);
+.wrap.narrow .notification-message {
+    margin: 0 0 3px;
+    color: var(--text);
     font-size: 15px;
-    line-height: 1.65;
+    line-height: 1.4;
     overflow-wrap: anywhere;
 }
 
-.note time {
+.wrap.narrow .notification-message strong {
+    color: var(--stone);
+    font-weight: 700;
+}
+
+.wrap.narrow .note.unread .notification-message { color: var(--stone); }
+
+.wrap.narrow .notification-content time {
     display: block;
-    margin-top: 6px;
     color: var(--faint);
     font-size: 12.5px;
     font-weight: 600;
 }
 
-.note a {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    margin-top: 6px;
-    font-size: 13px;
-    font-weight: 800;
+.wrap.narrow .note.unread .notification-content time { color: var(--orange-light); }
+
+.wrap.narrow .notification-content form { margin: 0; }
+
+/* "View details" button: invisible, stretched over the whole row */
+.wrap.narrow .notification-link {
+    padding: 0;
+    color: transparent;
+    background: none;
+    border: 0;
+    font-size: 0;
+    line-height: 0;
+    cursor: pointer;
 }
 
-.note a::after {
-    content: "\2192";
-    transition: transform 0.2s ease;
-}
-
-.note a:hover { color: var(--white); }
-.note a:hover::after { transform: translateX(3px); }
-
-/* The paragraph that holds the link */
-.note p:has(> a) {
-    margin: 0;
-}
-
-
-/* Unread: tinted, brighter text, orange dot + bar */
-.note.unread {
-    background: var(--orange-soft);
-}
-
-.note.unread:hover {
-    background: rgba(217, 79, 22, 0.17);
-}
-
-.note.unread::before {
+.wrap.narrow .notification-link::after {
     position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    width: 3px;
-    background: var(--orange);
+    inset: 0;
+    border-radius: 10px;
     content: "";
 }
 
-.note.unread .dot {
-    background: var(--orange-light);
-    border-color: var(--orange-light);
-    box-shadow: 0 0 0 4px rgba(217, 79, 22, 0.18);
+.wrap.narrow .notification-link:focus-visible::after {
+    outline: 2px solid var(--orange-light);
+    outline-offset: -2px;
 }
 
-.note.unread p {
-    color: var(--stone);
-    font-weight: 600;
+/* ---------- UNREAD DOT ---------- */
+
+.wrap.narrow .notification-unread-dot {
+    flex-shrink: 0;
+    width: 12px;
+    height: 12px;
+    margin-right: 4px;
+    background: var(--orange);
+    border-radius: 50%;
+    box-shadow: 0 0 0 3px rgba(217, 79, 22, 0.18);
 }
 
-.note.unread time { color: var(--muted); }
+/* ---------- EMPTY STATE ---------- */
 
-
-/* Empty state (a note without a dot) */
-.note:not(:has(.dot)) {
-    flex-direction: column;
-    align-items: center;
-    padding: 56px 24px;
+.wrap.narrow .note:not(:has(.notification-avatar)) {
+    justify-content: center;
+    padding: 56px 20px;
     text-align: center;
 }
 
-.note:not(:has(.dot)):hover { background: transparent; }
+.wrap.narrow .note:not(:has(.notification-avatar)):hover { background: transparent; }
 
-.note:not(:has(.dot))::before {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 60px;
-    height: 60px;
-    margin: 0 auto 18px;
-    color: var(--orange-light);
-    background: var(--orange-soft);
-    border: 1px solid rgba(217, 79, 22, 0.25);
-    border-radius: 18px;
-    content: "\25C7";
-    font-size: 28px;
-    transform: rotate(-12deg);
-}
-
-.note:not(:has(.dot)) p {
+.wrap.narrow .note:not(:has(.notification-avatar)) p {
+    margin: 0 0 4px;
     color: var(--stone);
     font-size: 16px;
     font-weight: 700;
 }
 
-.note:not(:has(.dot)) .meta {
-    display: block;
-    margin-top: 4px;
-    font-size: 14px;
+.wrap.narrow .note:not(:has(.notification-avatar)) small.meta {
+    color: var(--muted);
+    font-size: 13.5px;
 }
 
-
-/* =========================================
-   RESPONSIVE: NAV (1150px)
-========================================= */
-
-@media (max-width: 1150px) {
-    .nav { flex-wrap: wrap; gap: 12px 18px; padding: 14px 24px; }
-    .logo { margin-right: auto; }
-    .nav-tools { margin-left: auto; }
-
-    .nav-links {
-        order: 3;
-        justify-content: flex-start;
-        width: 100%;
-        margin: 0;
-        padding-top: 8px;
-        overflow-x: auto;
-        overscroll-behavior-x: contain;
-    }
-
-    .nav-links a { flex-shrink: 0; }
-}
-
-
-/* =========================================
-   RESPONSIVE: TABLET (850px)
-========================================= */
-
-@media (max-width: 850px) {
-    .wrap { width: calc(100% - 36px); margin: 28px auto 50px; }
-}
-
-
-/* =========================================
-   RESPONSIVE: MOBILE (560px)
-========================================= */
+/* ---------- RESPONSIVE ---------- */
 
 @media (max-width: 560px) {
-    .nav { gap: 10px; padding: 12px; }
-    .logo { font-size: 24px; }
-    .logo::before { width: 7px; height: 23px; margin-right: 7px; }
-    .nav-tools { gap: 5px; }
+    .wrap.narrow { padding: 20px 10px 60px; }
 
-    .icon-btn,
-    .avatar { width: 34px; height: 34px; border-radius: 10px; font-size: 14px; }
-
-    .logout { min-height: 34px; padding: 5px 8px; font-size: 11px; }
-
-    .nav-links { gap: 3px; padding-top: 5px; }
-    .nav-links a { min-height: 35px; padding: 7px 10px; border-radius: 8px; font-size: 12px; }
-
-    .wrap { width: calc(100% - 24px); margin: 18px auto 40px; }
-
-    .head-row {
+    .wrap.narrow .page-head.head-row {
         align-items: flex-start;
         flex-direction: column;
-        gap: 18px;
+        gap: 14px;
     }
 
-    .page-head { margin-bottom: 18px; padding-bottom: 18px; }
-    .page-head h1 { font-size: 44px; }
+    .wrap.narrow .notes { padding: 4px; border-radius: 14px; }
 
-    .page-head form,
-    .page-head .btn { width: 100%; }
+    .wrap.narrow .note { gap: 10px; padding: 10px 8px; }
 
-    .note { gap: 13px; padding: 16px 16px; }
-    .note p { font-size: 14.5px; }
+    .wrap.narrow .notification-avatar,
+    .wrap.narrow .notification-avatar img,
+    .wrap.narrow .avatar-fallback { width: 48px; height: 48px; }
+
+    .wrap.narrow .avatar-fallback { font-size: 19px; }
+
+    .wrap.narrow .notification-message { font-size: 14px; }
 }
 
-
-/* =========================================
-   REDUCED MOTION
-========================================= */
-
 @media (prefers-reduced-motion: reduce) {
-    html { scroll-behavior: auto; }
-
-    *,
-    *::before,
-    *::after {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-    }
-
-    .btn:hover:not(:disabled) { transform: none; }
+    .wrap.narrow .note,
+    .wrap.narrow .btn-ghost { transition: none; }
 }

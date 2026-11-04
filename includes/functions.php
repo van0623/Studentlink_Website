@@ -1,9 +1,9 @@
 
 <?php
 
-/* Escape output to prevent HTML injection */
+/* Escape output */
 function e($v) {
-    return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8');
+    return htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
 }
 
 /* Find a row by ID */
@@ -21,11 +21,11 @@ function find_by_id(array $rows, $id) {
 function filter_rows(array $rows, array $keys, array $eq = []) {
     $q = strtolower(trim($_GET['q'] ?? ''));
 
-    return array_values(array_filter($rows, function($r) use ($q, $keys, $eq) {
+    return array_values(array_filter($rows, function ($r) use ($q, $keys, $eq) {
         foreach ($eq as $f) {
             $v = $_GET[$f] ?? '';
 
-            if ($v !== '' && strcasecmp((string)$r[$f], $v) !== 0) {
+            if ($v !== '' && strcasecmp((string) $r[$f], $v) !== 0) {
                 return false;
             }
         }
@@ -35,7 +35,7 @@ function filter_rows(array $rows, array $keys, array $eq = []) {
         }
 
         foreach ($keys as $k) {
-            if (str_contains(strtolower((string)$r[$k]), $q)) {
+            if (str_contains(strtolower((string) $r[$k]), $q)) {
                 return true;
             }
         }
@@ -44,7 +44,7 @@ function filter_rows(array $rows, array $keys, array $eq = []) {
     }));
 }
 
-/* Prints a select whose first option clears the filter */
+/* Prints a select filter */
 function select_filter(string $name, string $label, array $options) {
     $cur = $_GET[$name] ?? '';
 
@@ -58,7 +58,7 @@ function select_filter(string $name, string $label, array $options) {
     echo '</select>';
 }
 
-/* Prints option tags for form selects */
+/* Prints option tags */
 function options(array $list, string $placeholder = '', string $selected = '') {
     if ($placeholder !== '') {
         echo '<option value="">' . e($placeholder) . '</option>';
@@ -69,7 +69,7 @@ function options(array $list, string $placeholder = '', string $selected = '') {
     }
 }
 
-/* Returns labels of required POST fields that are empty */
+/* Checks required fields */
 function missing(array $labels) {
     $out = [];
 
@@ -97,14 +97,14 @@ function show_errors(array $errors) {
     echo '</ul></div>';
 }
 
-/* Displays a success message when posted */
+/* Displays a success message */
 function flash(string $message) {
     if (isset($_GET['posted'])) {
         echo '<div class="notice" role="status">' . e($message) . '</div>';
     }
 }
 
-/* Gets initials from a full name */
+/* Gets initials from a name */
 function initials(string $name) {
     $p = preg_split('/\s+/', trim($name));
 
@@ -114,82 +114,68 @@ function initials(string $name) {
     );
 }
 
-
-/* =========================================================
-   NOTIFICATION FUNCTIONS
-   ========================================================= */
-
-/*
-   Sends a notification to one user.
-
-   Example:
-   createNotification(
-       $conn,
-       $userId,
-       'You successfully downloaded a resource.',
-       'notifications.php'
-   );
-*/
-function createNotification(mysqli $conn, int $userId, string $message, ?string $link = null): bool {
+/* Creates a notification */
+function createNotification(
+    mysqli $conn,
+    int $userId,
+    string $message,
+    ?string $link = null,
+    ?int $actorId = null
+): bool {
 
     if ($userId <= 0 || trim($message) === '') {
         return false;
     }
 
     $stmt = $conn->prepare("
-        INSERT INTO notifications (user_id, message, link)
-        VALUES (?, ?, ?)
+        INSERT INTO notifications
+            (user_id, actor_id, message, link)
+        VALUES (?, ?, ?, ?)
     ");
 
     if (!$stmt) {
+        error_log('Create notification error: ' . $conn->error);
         return false;
     }
 
-    $stmt->bind_param("iss", $userId, $message, $link);
+    $stmt->bind_param(
+        'iiss',
+        $userId,
+        $actorId,
+        $message,
+        $link
+    );
 
     $success = $stmt->execute();
+
+    if (!$success) {
+        error_log('Create notification execution error: ' . $stmt->error);
+    }
 
     $stmt->close();
 
     return $success;
 }
 
-
-/*
-   Sends a notification to active admins who enabled
-   the selected notification preference.
-
-   Allowed preferences:
-   notify_reports
-   notify_registrations
-   notify_content
-   notify_transactions
-   notify_new_content
-
-   Example:
-   notifyAdmins(
-       $conn,
-       'notify_new_content',
-       'A new resource has been uploaded.',
-       'admin/resources.php'
-   );
-*/
+/* Sends notifications to admins based on admin_settings preferences */
 function notifyAdmins(
     mysqli $conn,
     string $preference,
     string $message,
-    ?string $link = null
+    ?string $link = null,
+    ?int $actorId = null
 ): int {
 
+    /* Only allow valid notification preference columns */
     $allowedPreferences = [
         'notify_reports',
         'notify_registrations',
         'notify_content',
         'notify_transactions',
-        'notify_new_content'
+        'notify_new_content',
+        'notify_security'
     ];
 
-    /* Prevent invalid SQL column names */
     if (!in_array($preference, $allowedPreferences, true)) {
         return 0;
     }
@@ -198,19 +184,14 @@ function notifyAdmins(
         return 0;
     }
 
-    /*
-       Get active admin accounts.
-
-       If an admin has no settings row yet,
-       their notifications are enabled by default.
-    */
+    /* Get active administrators and their notification preferences */
     $sql = "
         SELECT
             u.id,
             COALESCE(s.$preference, 1) AS notification_enabled
         FROM users u
-        LEFT JOIN admin_notification_settings s
-            ON s.admin_id = u.id
+        LEFT JOIN admin_settings s
+            ON s.user_id = u.id
         WHERE u.role = 'admin'
           AND u.status = 'Active'
     ";
@@ -218,6 +199,7 @@ function notifyAdmins(
     $result = $conn->query($sql);
 
     if (!$result) {
+        error_log('Admin notification query error: ' . $conn->error);
         return 0;
     }
 
@@ -225,15 +207,18 @@ function notifyAdmins(
 
     while ($admin = $result->fetch_assoc()) {
 
-        if ((int)$admin['notification_enabled'] !== 1) {
+        /* Skip admins who disabled this notification */
+        if ((int) $admin['notification_enabled'] !== 1) {
             continue;
         }
 
+        /* Create notification for the administrator */
         if (createNotification(
             $conn,
-            (int)$admin['id'],
+            (int) $admin['id'],
             $message,
-            $link
+            $link,
+            $actorId
         )) {
             $sentCount++;
         }
@@ -242,4 +227,43 @@ function notifyAdmins(
     $result->free();
 
     return $sentCount;
+}
+
+/* Records an activity performed by an admin */
+function logAdminActivity(
+    mysqli $conn,
+    int $adminId,
+    string $preference,
+    string $message,
+    ?string $link = null
+): int {
+
+    if ($adminId <= 0 || trim($message) === '') {
+        return 0;
+    }
+
+    /* Only allow valid admin notification preferences */
+    $allowedPreferences = [
+        'notify_reports',
+        'notify_registrations',
+        'notify_content',
+        'notify_transactions',
+        'notify_new_content',
+        'notify_security'
+    ];
+
+    if (!in_array($preference, $allowedPreferences, true)) {
+        return 0;
+    }
+
+    /*
+     * Send the activity notification to active admins
+     */
+    return notifyAdmins(
+        $conn,
+        $preference,
+        $message,
+        $link,
+        $adminId
+    );
 }

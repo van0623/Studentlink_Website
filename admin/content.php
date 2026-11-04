@@ -19,7 +19,7 @@ if ($sessionUserId <= 0) {
 }
 
 $authStmt = $conn->prepare("
-    SELECT id, role, status
+    SELECT id, full_name, role, status
     FROM users
     WHERE id = ?
     LIMIT 1
@@ -32,6 +32,7 @@ if (!$authStmt) {
 
 $authStmt->bind_param('i', $sessionUserId);
 $authStmt->execute();
+
 $currentAccount = $authStmt->get_result()->fetch_assoc();
 $authStmt->close();
 
@@ -43,6 +44,8 @@ if (
     header('Location: ../login.php');
     exit;
 }
+
+$adminName = $currentAccount['full_name'] ?? 'Administrator';
 
 /* =========================================
    CONTENT TYPES
@@ -56,9 +59,9 @@ $types = [
 ];
 
 /*
- * These mappings are fixed and controlled by the application.
- * Never accept table or column names directly from the user.
+ * Fixed table and column mappings.
  */
+
 $contentTables = [
     'Resource' => [
         'table' => 'resources',
@@ -117,7 +120,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $submittedToken = $_POST['csrf_token'] ?? '';
 
-    if (!hash_equals($csrfToken, $submittedToken)) {
+    if (
+        !is_string($submittedToken) ||
+        !hash_equals($csrfToken, $submittedToken)
+    ) {
 
         $errors[] = 'Invalid request. Please refresh the page and try again.';
 
@@ -127,10 +133,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $contentId = (int) ($_POST['content_id'] ?? 0);
         $contentType = $_POST['content_type'] ?? '';
 
+        /*
+         * Preserve filters after an action.
+         */
+
+        $returnType = trim($_POST['return_type'] ?? '');
+        $returnSearch = trim($_POST['return_search'] ?? '');
+
+        if (!isset($types[$returnType])) {
+            $returnType = '';
+        }
+
+        $returnQuery = http_build_query([
+            'type' => $returnType,
+            'q' => $returnSearch
+        ]);
+
+        $returnUrl = 'content.php' .
+            ($returnQuery !== '' ? '?' . $returnQuery : '');
+
         if (
             $contentId <= 0 ||
+            !is_string($contentType) ||
             !isset($contentTables[$contentType])
         ) {
+
             $errors[] = 'Invalid content information.';
 
         } else {
@@ -152,7 +179,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $errors[] = 'Content title must not exceed 255 characters.';
                 }
 
+                $oldTitle = '';
+
+                /* Get existing content */
+
                 if (empty($errors)) {
+
+                    $checkStmt = $conn->prepare("
+                        SELECT `$titleColumn` AS title
+                        FROM `$table`
+                        WHERE id = ?
+                        LIMIT 1
+                    ");
+
+                    if (!$checkStmt) {
+
+                        error_log('Content verification failed: ' . $conn->error);
+                        $errors[] = 'Unable to verify the selected content.';
+
+                    } else {
+
+                        $checkStmt->bind_param('i', $contentId);
+                        $checkStmt->execute();
+
+                        $existingContent = $checkStmt->get_result()->fetch_assoc();
+                        $checkStmt->close();
+
+                        if (!$existingContent) {
+                            $errors[] = 'Content not found.';
+                        } else {
+                            $oldTitle = $existingContent['title'];
+                        }
+                    }
+                }
+
+                /* Update only if the title changed */
+
+                if (empty($errors)) {
+
+                    if ($oldTitle === $newTitle) {
+
+                        header('Location: ' . $returnUrl);
+                        exit;
+
+                    }
 
                     $updateStmt = $conn->prepare("
                         UPDATE `$table`
@@ -161,22 +231,51 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     ");
 
                     if (!$updateStmt) {
+
                         error_log('Content update preparation failed: ' . $conn->error);
                         $errors[] = 'Unable to prepare the content update.';
+
                     } else {
 
                         $updateStmt->bind_param('si', $newTitle, $contentId);
 
                         if ($updateStmt->execute()) {
+
+                            $changed = $updateStmt->affected_rows > 0;
                             $updateStmt->close();
 
-                            header('Location: content.php?success=updated');
-                            exit;
-                        }
+                            if ($changed) {
 
-                        error_log('Content update failed: ' . $updateStmt->error);
-                        $errors[] = 'Unable to update this content.';
-                        $updateStmt->close();
+                                /* RECORD ADMIN ACTIVITY */
+
+                                $activityMessage =
+                                    $adminName .
+                                    ' updated the ' .
+                                    strtolower($contentType) .
+                                    ' title from "' .
+                                    $oldTitle .
+                                    '" to "' .
+                                    $newTitle .
+                                    '".';
+
+                                notifyAdmins(
+                                    $conn,
+                                    'notify_content',
+                                    $activityMessage,
+                                    'content.php',
+                                    $sessionUserId
+                                );
+                            }
+
+                            header('Location: ' . $returnUrl . '&success=updated');
+                            exit;
+
+                        } else {
+
+                            error_log('Content update failed: ' . $updateStmt->error);
+                            $errors[] = 'Unable to update this content.';
+                            $updateStmt->close();
+                        }
                     }
                 }
             }
@@ -193,6 +292,49 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $errors[] = 'Invalid content status.';
                 }
 
+                $existingContent = null;
+
+                /* Verify content and get its title/status */
+
+                if (empty($errors)) {
+
+                    $checkStmt = $conn->prepare("
+                        SELECT `$titleColumn` AS title, status
+                        FROM `$table`
+                        WHERE id = ?
+                        LIMIT 1
+                    ");
+
+                    if (!$checkStmt) {
+
+                        error_log('Content status verification failed: ' . $conn->error);
+                        $errors[] = 'Unable to verify the selected content.';
+
+                    } else {
+
+                        $checkStmt->bind_param('i', $contentId);
+                        $checkStmt->execute();
+
+                        $existingContent = $checkStmt->get_result()->fetch_assoc();
+                        $checkStmt->close();
+
+                        if (!$existingContent) {
+                            $errors[] = 'Content not found.';
+                        }
+                    }
+                }
+
+                /* Check if status needs to change */
+
+                if (empty($errors)) {
+
+                    if ($existingContent['status'] === $newStatus) {
+                        $errors[] = 'This content already has the selected status.';
+                    }
+                }
+
+                /* Update content status */
+
                 if (empty($errors)) {
 
                     $statusStmt = $conn->prepare("
@@ -202,31 +344,67 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     ");
 
                     if (!$statusStmt) {
+
                         error_log('Content status preparation failed: ' . $conn->error);
                         $errors[] = 'Unable to prepare the status update.';
+
                     } else {
 
                         $statusStmt->bind_param('si', $newStatus, $contentId);
 
                         if ($statusStmt->execute()) {
+
+                            $changed = $statusStmt->affected_rows > 0;
                             $statusStmt->close();
+
+                            if ($changed) {
+
+                                /* RECORD ADMIN ACTIVITY */
+
+                                $activityAction = $newStatus === 'Removed'
+                                    ? 'removed'
+                                    : 'restored';
+
+                                $activityMessage =
+                                    $adminName .
+                                    ' ' .
+                                    $activityAction .
+                                    ' a ' .
+                                    strtolower($contentType) .
+                                    ': "' .
+                                    $existingContent['title'] .
+                                    '".';
+
+                                notifyAdmins(
+                                    $conn,
+                                    'notify_content',
+                                    $activityMessage,
+                                    'content.php',
+                                    $sessionUserId
+                                );
+                            }
 
                             $message = $newStatus === 'Removed'
                                 ? 'removed'
                                 : 'restored';
 
-                            header('Location: content.php?success=' . $message);
+                            header('Location: ' . $returnUrl . '&success=' . $message);
                             exit;
-                        }
 
-                        error_log('Content status update failed: ' . $statusStmt->error);
-                        $errors[] = 'Unable to update the content status. Check the status values allowed by your database.';
-                        $statusStmt->close();
+                        } else {
+
+                            error_log('Content status update failed: ' . $statusStmt->error);
+
+                            $errors[] = 'Unable to update the content status. Check the status values allowed by your database.';
+
+                            $statusStmt->close();
+                        }
                     }
                 }
             }
 
             else {
+
                 $errors[] = 'Invalid content action.';
             }
         }
@@ -280,6 +458,7 @@ if ($editId > 0 && isset($contentTables[$editType])) {
         $editStmt->close();
 
     } else {
+
         error_log('Content edit query failed: ' . $conn->error);
         $errors[] = 'Unable to load the selected content.';
     }
@@ -379,6 +558,7 @@ $stmt->bind_param(
 );
 
 if (!$stmt->execute()) {
+
     error_log('Admin content query execution failed: ' . $stmt->error);
     $stmt->close();
 
@@ -443,6 +623,9 @@ include __DIR__ . '/../includes/admin-header.php';
             <input type="hidden" name="content_id" value="<?= (int) $editContent['id'] ?>">
             <input type="hidden" name="content_type" value="<?= e($editType) ?>">
 
+            <input type="hidden" name="return_type" value="<?= e($type) ?>">
+            <input type="hidden" name="return_search" value="<?= e($search) ?>">
+
             <div class="field">
                 <label for="content_title">Content Title</label>
 
@@ -482,8 +665,10 @@ include __DIR__ . '/../includes/admin-header.php';
 
 <nav class="tabs" aria-label="Content type">
 
-    <a href="content.php<?= $search !== '' ? '?q=' . urlencode($search) : '' ?>"
-       <?= $type === '' ? 'aria-current="true"' : '' ?>>
+    <a
+        href="content.php<?= $search !== '' ? '?q=' . urlencode($search) : '' ?>"
+        <?= $type === '' ? 'aria-current="true"' : '' ?>
+    >
         All
     </a>
 
@@ -584,6 +769,7 @@ include __DIR__ . '/../includes/admin-header.php';
                         <div class="content-actions">
 
                             <!-- VIEW -->
+
                             <a
                                 class="btn btn-primary"
                                 href="content-view.php?id=<?= (int) $c['id'] ?>&type=<?= urlencode($c['type']) ?>"
@@ -592,14 +778,16 @@ include __DIR__ . '/../includes/admin-header.php';
                             </a>
 
                             <!-- EDIT -->
+
                             <a
                                 class="btn"
-                                href="content.php?edit=<?= (int) $c['id'] ?>&edit_type=<?= urlencode($c['type']) ?>"
+                                href="content.php?edit=<?= (int) $c['id'] ?>&edit_type=<?= urlencode($c['type']) ?>&type=<?= urlencode($type) ?>&q=<?= urlencode($search) ?>"
                             >
                                 Edit
                             </a>
 
                             <!-- REMOVE / RESTORE -->
+
                             <form
                                 method="post"
                                 action="content.php"
@@ -634,6 +822,18 @@ include __DIR__ . '/../includes/admin-header.php';
                                     type="hidden"
                                     name="new_status"
                                     value="<?= $isRemoved ? 'Active' : 'Removed' ?>"
+                                >
+
+                                <input
+                                    type="hidden"
+                                    name="return_type"
+                                    value="<?= e($type) ?>"
+                                >
+
+                                <input
+                                    type="hidden"
+                                    name="return_search"
+                                    value="<?= e($search) ?>"
                                 >
 
                                 <button

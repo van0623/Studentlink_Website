@@ -1,7 +1,4 @@
-/* =========================================
-   ACTIVITY.CSS
-   Clean + calm: solid panels, one accent color
-========================================= */
+
 
 :root {
     --bg: #161714;
@@ -293,7 +290,7 @@ button:focus-visible {
 .stat {
     display: flex;
     flex: 1 1 150px;
-    flex-direction: column-reverse; /* number on top, label below */
+    flex-direction: column-reverse; 
     justify-content: flex-end;
     gap: 8px;
     padding: 22px 22px 20px;
