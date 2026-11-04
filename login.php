@@ -157,9 +157,6 @@ include __DIR__ . '/includes/header.php';
                 </div>
             </div>
 
-            <a class="forgot" href="#">
-                Forgot your password?
-            </a>
 
             <button
                 type="submit"
@@ -170,12 +167,6 @@ include __DIR__ . '/includes/header.php';
             </button>
 
         </form>
-
-        <div class="or">or</div>
-
-        <a class="btn btn-ghost" href="#">
-            Sign in with Google
-        </a>
 
         <p class="switch">
             No account yet?

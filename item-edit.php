@@ -324,12 +324,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             );
 
             $update->execute();
-
-            $updatedRows = $update->affected_rows;
             $update->close();
 
             /*
-             * The record may be unchanged, so affected_rows can be zero.
              * Verify that the active item still belongs to the user.
              */
             $verify = $conn->prepare(
@@ -379,6 +376,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             }
 
+            /*
+            |--------------------------------------------------------------------------
+            | SEND NOTIFICATIONS AFTER SUCCESSFUL UPDATE
+            |--------------------------------------------------------------------------
+            */
+
+            $itemLink = 'item-view.php?id=' . $itemId;
+
+            try {
+                // Notify the student who owns the item.
+                createNotification(
+                    $conn,
+                    $userId,
+                    'Your item "' . $name . '" was successfully updated.',
+                    $itemLink,
+                    $userId
+                );
+
+                // Notify admins who enabled content-update notifications.
+                notifyAdmins(
+                    $conn,
+                    'notify_content',
+                    'An item has been updated: "' . $name . '".',
+                    $itemLink,
+                    $userId
+                );
+
+            } catch (Throwable $notificationError) {
+                // Do not undo a successful item update if notification fails.
+                error_log(
+                    'Item update notification error: ' .
+                    $notificationError->getMessage()
+                );
+            }
+
+            /*
+             * Redirect after successful update.
+             */
             header(
                 'Location: item-view.php?id=' . $itemId . '&updated=1'
             );

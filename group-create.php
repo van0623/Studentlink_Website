@@ -109,6 +109,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $stmt = $conn->prepare($sql);
 
+            if (!$stmt) {
+                throw new Exception($conn->error);
+            }
+
             $stmt->bind_param(
                 'ssiisi',
                 $name,
@@ -126,8 +130,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             /* Add the creator as the first group member */
             $member = $conn->prepare(
                 "INSERT INTO group_members (group_id, user_id)
-                 VALUES (?, ?)"
+                VALUES (?, ?)"
             );
+
+            if (!$member) {
+                throw new Exception($conn->error);
+            }
 
             $member->bind_param('ii', $groupId, $userId);
             $member->execute();
@@ -135,6 +143,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             /* Save both database changes */
             $conn->commit();
+
+            /*
+             * Notify the student who created the group.
+             */
+            try {
+                createNotification(
+                    $conn,
+                    $userId,
+                    'You successfully created the study group: ' . $name,
+                    'group-view.php?id=' . $groupId,
+                    null
+                );
+            } catch (Throwable $notificationError) {
+                error_log(
+                    'Group creator notification error: '
+                    . $notificationError->getMessage()
+                );
+            }
+
+            /*
+             * Notify admins about the newly created group.
+             */
+            try {
+                notifyAdmins(
+                    $conn,
+                    'notify_new_content',
+                    'A new study group was created: ' . $name,
+                    'group-view.php?id=' . $groupId,
+                    $userId
+                );
+            } catch (Throwable $notificationError) {
+                error_log(
+                    'Study group admin notification error: '
+                    . $notificationError->getMessage()
+                );
+            }
 
             header('Location: groups.php?posted=1');
             exit;
@@ -152,10 +196,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-/* Page settings */
-$title = 'Create a study group';
-$active = 'groups';
-$css = ['group-create'];
+
 
 include __DIR__ . '/includes/header.php';
 ?>

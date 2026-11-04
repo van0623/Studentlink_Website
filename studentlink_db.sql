@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Oct 28, 2026 at 10:54 AM
+-- Generation Time: Nov 04, 2026 at 06:00 PM
 -- Server version: 10.4.28-MariaDB
 -- PHP Version: 8.2.4
 
@@ -56,7 +56,7 @@ CREATE TABLE `admin_notification_settings` (
 --
 
 INSERT INTO `admin_notification_settings` (`id`, `admin_id`, `notify_reports`, `notify_registrations`, `notify_content`, `updated_at`, `notify_transactions`, `notify_new_content`) VALUES
-(1, 1, 1, 1, 1, '2026-10-28 08:57:00', 1, 1);
+(1, 1, 1, 1, 1, '2026-11-01 03:16:21', 0, 0);
 
 -- --------------------------------------------------------
 
@@ -68,8 +68,19 @@ CREATE TABLE `admin_settings` (
   `user_id` int(10) UNSIGNED NOT NULL,
   `notify_reports` tinyint(1) NOT NULL DEFAULT 1,
   `notify_registrations` tinyint(1) NOT NULL DEFAULT 1,
-  `notify_content` tinyint(1) NOT NULL DEFAULT 1
+  `notify_content` tinyint(1) NOT NULL DEFAULT 1,
+  `notify_transactions` tinyint(1) NOT NULL DEFAULT 1,
+  `notify_new_content` tinyint(1) NOT NULL DEFAULT 1,
+  `notify_security` tinyint(1) NOT NULL DEFAULT 1,
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `admin_settings`
+--
+
+INSERT INTO `admin_settings` (`user_id`, `notify_reports`, `notify_registrations`, `notify_content`, `notify_transactions`, `notify_new_content`, `notify_security`, `updated_at`) VALUES
+(1, 1, 1, 1, 0, 1, 1, '2026-11-01 03:06:22');
 
 -- --------------------------------------------------------
 
@@ -115,7 +126,8 @@ CREATE TABLE `conversations` (
 --
 
 INSERT INTO `conversations` (`id`, `user_one_id`, `user_two_id`, `created_at`, `updated_at`) VALUES
-(6, 2, 1, '2026-10-21 13:27:14', '2026-10-22 08:46:56');
+(6, 2, 1, '2026-10-21 13:27:14', '2026-10-22 08:46:56'),
+(7, 1, 3, '2026-11-04 16:50:05', '2026-11-04 16:50:05');
 
 -- --------------------------------------------------------
 
@@ -142,7 +154,9 @@ INSERT INTO `conversation_contexts` (`id`, `conversation_id`, `source_type`, `so
 (1, 6, 'item', 2, 'Pen', 'item-view.php?id=2', 2, '2026-10-21 13:49:08'),
 (2, 6, 'resource', 1, 'sample title', 'resource-view.php?id=1', 2, '2026-10-21 13:57:44'),
 (3, 6, 'group', 1, 'Test Web Group', 'group-view.php?id=1', 2, '2026-10-21 14:00:38'),
-(5, 6, 'service', 2, 'PHP Programming', 'service-view.php?id=2', 2, '2026-10-21 14:02:24');
+(5, 6, 'service', 2, 'PHP Programming', 'service-view.php?id=2', 2, '2026-10-21 14:02:24'),
+(6, 6, 'resource', 2, 'try', 'resource-view.php?id=2', 1, '2026-11-04 16:49:33'),
+(7, 7, 'group', 3, 'samahan', 'group-view.php?id=3', 1, '2026-11-04 16:50:05');
 
 -- --------------------------------------------------------
 
@@ -162,7 +176,9 @@ CREATE TABLE `conversation_members` (
 
 INSERT INTO `conversation_members` (`conversation_id`, `user_id`, `joined_at`) VALUES
 (6, 1, '2026-10-21 13:27:14'),
-(6, 2, '2026-10-21 13:27:14');
+(6, 2, '2026-10-21 13:27:14'),
+(7, 1, '2026-11-04 16:50:05'),
+(7, 3, '2026-11-04 16:50:05');
 
 -- --------------------------------------------------------
 
@@ -182,7 +198,8 @@ CREATE TABLE `group_members` (
 
 INSERT INTO `group_members` (`group_id`, `user_id`, `joined_at`) VALUES
 (2, 1, '2026-10-19 16:38:50'),
-(3, 3, '2026-10-28 07:15:57');
+(3, 3, '2026-10-28 07:15:57'),
+(4, 1, '2026-10-28 12:27:14');
 
 -- --------------------------------------------------------
 
@@ -210,7 +227,8 @@ CREATE TABLE `items` (
 
 INSERT INTO `items` (`id`, `user_id`, `category_id`, `name`, `transaction_type`, `item_condition`, `price`, `description`, `image_path`, `status`, `created_at`) VALUES
 (1, 1, 1, 'notebook', 'Borrow', 'New', 0.00, 'sample data', 'uploads/items/7ed0e2fc5db089efc61888d9eab307b7.jpg', 'Removed', '2026-10-20 11:12:39'),
-(2, 1, 4, 'Pen', 'Sell', 'Good', 15.00, 'selling pens', 'uploads/items/3f3ba32f309fe936e6833037e3565dcd.webp', 'Active', '2026-10-20 23:14:40');
+(2, 1, 4, 'Pen', 'Sell', 'Good', 10.00, 'selling pens', 'uploads/items/3f3ba32f309fe936e6833037e3565dcd.webp', 'Active', '2026-10-20 23:14:40'),
+(3, 1, 3, 'keyboard', 'Sell', 'Used', 799.96, 'good as new \r\nall working', NULL, 'Active', '2026-10-29 14:39:15');
 
 -- --------------------------------------------------------
 
@@ -233,7 +251,7 @@ CREATE TABLE `item_requests` (
 --
 
 INSERT INTO `item_requests` (`id`, `item_id`, `requester_id`, `owner_id`, `status`, `created_at`, `updated_at`) VALUES
-(1, 2, 2, 1, 'Pending', '2026-10-21 14:09:21', '2026-10-21 14:09:21');
+(1, 2, 2, 1, 'Accepted', '2026-10-21 14:09:21', '2026-10-28 13:21:34');
 
 -- --------------------------------------------------------
 
@@ -268,6 +286,7 @@ INSERT INTO `messages` (`id`, `conversation_id`, `sender_id`, `body`, `created_a
 CREATE TABLE `notifications` (
   `id` int(10) UNSIGNED NOT NULL,
   `user_id` int(10) UNSIGNED NOT NULL,
+  `actor_id` int(10) UNSIGNED DEFAULT NULL,
   `message` varchar(255) NOT NULL,
   `link` varchar(255) DEFAULT NULL,
   `is_read` tinyint(1) NOT NULL DEFAULT 0,
@@ -278,12 +297,50 @@ CREATE TABLE `notifications` (
 -- Dumping data for table `notifications`
 --
 
-INSERT INTO `notifications` (`id`, `user_id`, `message`, `link`, `is_read`, `created_at`) VALUES
-(1, 1, 'You successfully downloaded: try', 'resource-view.php?id=2', 1, '2026-10-28 09:25:40'),
-(2, 2, 'Ivan rolf Geringer downloaded your resource: try', 'resource-view.php?id=2', 0, '2026-10-28 09:25:41'),
-(3, 1, 'You successfully downloaded: try', 'resource-view.php?id=2', 1, '2026-10-28 09:30:21'),
-(4, 2, 'Ivan rolf Geringer downloaded your resource: try', 'resource-view.php?id=2', 0, '2026-10-28 09:30:21'),
-(5, 1, 'You successfully downloaded: sample title', 'resource-view.php?id=1', 0, '2026-10-28 09:31:57');
+INSERT INTO `notifications` (`id`, `user_id`, `actor_id`, `message`, `link`, `is_read`, `created_at`) VALUES
+(1, 1, NULL, 'You successfully downloaded: try', 'resource-view.php?id=2', 1, '2026-10-28 09:25:40'),
+(2, 2, NULL, 'Ivan rolf Geringer downloaded your resource: try', 'resource-view.php?id=2', 1, '2026-10-28 09:25:41'),
+(3, 1, NULL, 'You successfully downloaded: try', 'resource-view.php?id=2', 1, '2026-10-28 09:30:21'),
+(4, 2, NULL, 'Ivan rolf Geringer downloaded your resource: try', 'resource-view.php?id=2', 1, '2026-10-28 09:30:21'),
+(5, 1, NULL, 'You successfully downloaded: sample title', 'resource-view.php?id=1', 1, '2026-10-28 09:31:57'),
+(6, 1, NULL, 'A new study group was created: group 1', 'group-view.php?id=4', 1, '2026-10-28 12:27:14'),
+(7, 4, NULL, 'A new study group was created: group 1', 'group-view.php?id=4', 1, '2026-10-28 12:27:14'),
+(8, 3, NULL, 'You successfully downloaded: try', 'resource-view.php?id=2', 1, '2026-10-28 12:49:44'),
+(9, 2, 3, 'chum downloaded your resource: try', 'resource-view.php?id=2', 1, '2026-10-28 12:49:44'),
+(10, 1, NULL, 'You successfully downloaded: try', 'resource-view.php?id=2', 1, '2026-10-28 12:55:55'),
+(11, 1, NULL, 'You successfully created the study group: Ivan rolf Geringer', 'group-view.php?id=5', 1, '2026-10-29 14:32:58'),
+(12, 1, 1, 'A new study group was created: Ivan rolf Geringer', 'group-view.php?id=5', 1, '2026-10-29 14:32:59'),
+(13, 4, 1, 'A new study group was created: Ivan rolf Geringer', 'group-view.php?id=5', 1, '2026-10-29 14:32:59'),
+(14, 1, 1, 'Your item \"keyboard\" was successfully posted.', 'item-view.php?id=3', 1, '2026-10-29 14:39:15'),
+(15, 1, 1, 'A new item has been posted: \"keyboard\".', 'item-view.php?id=3', 1, '2026-10-29 14:39:15'),
+(16, 4, 1, 'A new item has been posted: \"keyboard\".', 'item-view.php?id=3', 1, '2026-10-29 14:39:15'),
+(17, 1, 1, 'Your item \"Pen\" was successfully updated.', 'item-view.php?id=2', 1, '2026-10-29 14:40:47'),
+(18, 1, 1, 'An item has been updated: \"Pen\".', 'item-view.php?id=2', 1, '2026-10-29 14:40:47'),
+(19, 4, 1, 'An item has been updated: \"Pen\".', 'item-view.php?id=2', 1, '2026-10-29 14:40:47'),
+(20, 2, 1, 'The acceptance of your request for \"PHP Programming\" was undone. Your request is now Pending.', 'service-view.php?id=2', 1, '2026-10-29 14:58:11'),
+(22, 1, 1, 'Your service \"PHP Programming\" was successfully updated.', 'service-view.php?id=2', 1, '2026-10-29 15:39:29'),
+(23, 1, 1, 'A service has been updated: \"PHP Programming\".', 'service-view.php?id=2', 1, '2026-10-29 15:39:29'),
+(24, 4, 1, 'A service has been updated: \"PHP Programming\".', 'service-view.php?id=2', 1, '2026-10-29 15:39:29'),
+(25, 1, 1, 'An admin created a new administrator account: admin3.', 'create-admin.php', 1, '2026-11-01 03:31:13'),
+(26, 4, 1, 'An admin created a new administrator account: admin3.', 'create-admin.php', 1, '2026-11-01 03:31:13'),
+(27, 5, 1, 'An admin created a new administrator account: admin3.', 'create-admin.php', 1, '2026-11-01 03:31:13'),
+(28, 6, 1, 'An admin created a new administrator account: admin3.', 'create-admin.php', 1, '2026-11-01 03:31:13'),
+(29, 1, 1, 'Admin Ivan Geringer created a new student account: student 1.', 'users.php', 1, '2026-11-01 05:05:00'),
+(30, 4, 1, 'Admin Ivan Geringer created a new student account: student 1.', 'users.php', 1, '2026-11-01 05:05:00'),
+(31, 5, 1, 'Admin Ivan Geringer created a new student account: student 1.', 'users.php', 1, '2026-11-01 05:05:00'),
+(32, 6, 1, 'Admin Ivan Geringer created a new student account: student 1.', 'users.php', 1, '2026-11-01 05:05:00'),
+(33, 1, 1, 'Admin Ivan Geringer updated the student account: student  one.', 'users.php', 1, '2026-11-01 05:06:49'),
+(34, 4, 1, 'Admin Ivan Geringer updated the student account: student  one.', 'users.php', 1, '2026-11-01 05:06:49'),
+(35, 5, 1, 'Admin Ivan Geringer updated the student account: student  one.', 'users.php', 1, '2026-11-01 05:06:49'),
+(36, 6, 1, 'Admin Ivan Geringer updated the student account: student  one.', 'users.php', 1, '2026-11-01 05:06:49'),
+(37, 1, 6, 'Admin admin3 removed the group: samahan.', 'content.php', 1, '2026-11-01 07:01:25'),
+(38, 4, 6, 'Admin admin3 removed the group: samahan.', 'content.php', 0, '2026-11-01 07:01:25'),
+(39, 5, 6, 'Admin admin3 removed the group: samahan.', 'content.php', 0, '2026-11-01 07:01:25'),
+(40, 6, 6, 'Admin admin3 removed the group: samahan.', 'content.php', 0, '2026-11-01 07:01:25'),
+(41, 1, 6, 'admin3 restored a group: \"samahan\".', 'content.php', 1, '2026-11-01 07:12:06'),
+(42, 4, 6, 'admin3 restored a group: \"samahan\".', 'content.php', 0, '2026-11-01 07:12:06'),
+(43, 5, 6, 'admin3 restored a group: \"samahan\".', 'content.php', 0, '2026-11-01 07:12:06'),
+(44, 6, 6, 'admin3 restored a group: \"samahan\".', 'content.php', 0, '2026-11-01 07:12:06');
 
 -- --------------------------------------------------------
 
@@ -387,7 +444,7 @@ CREATE TABLE `service_requests` (
 --
 
 INSERT INTO `service_requests` (`id`, `service_id`, `requester_id`, `provider_id`, `status`, `created_at`, `updated_at`) VALUES
-(1, 2, 2, 1, 'Accepted', '2026-10-21 14:11:24', '2026-10-21 14:25:37');
+(1, 2, 2, 1, 'Accepted', '2026-10-21 14:11:24', '2026-10-29 14:58:21');
 
 -- --------------------------------------------------------
 
@@ -413,9 +470,9 @@ CREATE TABLE `study_groups` (
 --
 
 INSERT INTO `study_groups` (`id`, `creator_id`, `subject_id`, `name`, `description`, `course`, `year_level`, `max_members`, `status`, `created_at`) VALUES
-(1, 1, 4, 'Test Web Group', 'Testing that the page reads from MySQL.', 'BSIT', '3rd Year', 10, 'Active', '2026-10-18 11:19:46'),
 (2, 1, 1, 'sample group', 'sample focus', NULL, '4th year', 100, 'Active', '2026-10-19 16:38:50'),
-(3, 3, 6, 'samahan', 'group for cybersecurity', NULL, '3rd year', 20, 'Active', '2026-10-28 07:15:57');
+(3, 3, 6, 'samahan', 'group for cybersecurity', NULL, '3rd year', 20, 'Active', '2026-10-28 07:15:57'),
+(4, 1, 2, 'group 1', '', NULL, '3rd year', 10, 'Active', '2026-10-28 12:27:14');
 
 -- --------------------------------------------------------
 
@@ -487,10 +544,13 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `full_name`, `email`, `password_hash`, `google_id`, `course`, `year_level`, `about`, `skills`, `photo_path`, `role`, `status`, `created_at`) VALUES
-(1, 'Ivan rolf Geringer', 'ivanrolfg@gmail.com', '$2y$10$kdxJpBukbHBzXKt5/8S/.uZYNbOxuUWp4tYfBQkjY7ptSDYMQ3ape', NULL, 'BS  Information Technology', '4th year', '', '', 'uploads/profiles/92c373314b5c3a6c1c139f303f4f2bab.jpg', 'admin', 'Active', '2026-10-16 05:11:26'),
+(1, 'Ivan Geringer', 'ivanrolfg@gmail.com', '$2y$10$kdxJpBukbHBzXKt5/8S/.uZYNbOxuUWp4tYfBQkjY7ptSDYMQ3ape', NULL, 'BS  Information Technology', '4th year', '', '', 'uploads/profiles/92c373314b5c3a6c1c139f303f4f2bab.jpg', 'admin', 'Active', '2026-10-16 05:11:26'),
 (2, 'rose sample', 'rosesample@gmail.com', '$2y$10$YH7vOHDyCA4hJF./7r/2Z.Lxp3AL4ARCrZxYzleLMfW0OZ0opIq2K', NULL, 'BSEMC', '1st Year', '', '', NULL, 'student', 'Active', '2026-10-21 08:21:47'),
 (3, 'chum', 'chu@gmail.com', '$2y$10$lkhEbPZyj4dfXyWi7b1HEONzdnD0NYoo3RY8KSOINBxd2xSSCawC.', NULL, 'BSIS', '1st Year', '', '', 'uploads/profiles/9d78e781a064003b93799ee26298d79b.jpg', 'student', 'Active', '2026-10-28 07:14:17'),
-(4, 'admin1', 'admin1@gmail.com', '$2y$10$xIP5wKAxBP5ZndWs2iXv3e6tzoSEOP2kvYhstpICsgZTxJAj5UFLW', NULL, '', '', '', '', NULL, 'admin', 'Active', '2026-10-28 07:25:22');
+(4, 'admin1', 'admin1@gmail.com', '$2y$10$xIP5wKAxBP5ZndWs2iXv3e6tzoSEOP2kvYhstpICsgZTxJAj5UFLW', NULL, '', '', '', '', NULL, 'admin', 'Active', '2026-10-28 07:25:22'),
+(5, 'admin sample', 'admin2@gmail.com', '$2y$10$G9mFmvqm1nmTRZF5cgQBLu/L1agiZUnQsgO2sT/KFFvjErRHmZ0gu', NULL, '', '', '', '', NULL, 'admin', 'Active', '2026-11-01 01:32:35'),
+(6, 'admin3', 'admin3@gmail.com', '$2y$10$LDnSd93.WZ0NqJYldKll8untU0YTx.F1k2G.Ow4ZvIuZU1o6YjUo2', NULL, '', '', '', '', NULL, 'admin', 'Active', '2026-11-01 03:31:13'),
+(7, 'student  one', 'student1@gmail.com', '$2y$10$YJ0ozezMiAw4iU/3fRVT6.q3FUj2S3W779UXWzcgKECXVB5bWkaCi', NULL, 'BSIT', '3rd Year', NULL, NULL, NULL, 'student', 'Active', '2026-11-01 05:05:00');
 
 --
 -- Indexes for dumped tables
@@ -584,7 +644,8 @@ ALTER TABLE `messages`
 --
 ALTER TABLE `notifications`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `idx_notif_user` (`user_id`,`is_read`,`created_at`);
+  ADD KEY `idx_notif_user` (`user_id`,`is_read`,`created_at`),
+  ADD KEY `fk_notifications_actor` (`actor_id`);
 
 --
 -- Indexes for table `reports`
@@ -670,7 +731,7 @@ ALTER TABLE `admin_activity`
 -- AUTO_INCREMENT for table `admin_notification_settings`
 --
 ALTER TABLE `admin_notification_settings`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT for table `categories`
@@ -682,19 +743,19 @@ ALTER TABLE `categories`
 -- AUTO_INCREMENT for table `conversations`
 --
 ALTER TABLE `conversations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `conversation_contexts`
 --
 ALTER TABLE `conversation_contexts`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `items`
 --
 ALTER TABLE `items`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `item_requests`
@@ -712,7 +773,7 @@ ALTER TABLE `messages`
 -- AUTO_INCREMENT for table `notifications`
 --
 ALTER TABLE `notifications`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=45;
 
 --
 -- AUTO_INCREMENT for table `reports`
@@ -760,7 +821,7 @@ ALTER TABLE `transactions`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- Constraints for dumped tables
@@ -838,6 +899,7 @@ ALTER TABLE `messages`
 -- Constraints for table `notifications`
 --
 ALTER TABLE `notifications`
+  ADD CONSTRAINT `fk_notifications_actor` FOREIGN KEY (`actor_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   ADD CONSTRAINT `notifications_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --

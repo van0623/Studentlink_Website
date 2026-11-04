@@ -1,9 +1,11 @@
+
 <?php
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
 require_once __DIR__ . '/db_connect.php';
+require_once __DIR__ . '/includes/functions.php';
 
 /* Require login */
 if (empty($_SESSION['user_id'])) {
@@ -79,20 +81,45 @@ if (!$activeUser) {
 if ($requestType === 'item_request') {
     $table = 'item_requests';
     $ownerColumn = 'owner_id';
+
+    /* Get the requester and item details */
+    $checkSql = "
+        SELECT
+            ir.id,
+            ir.status,
+            ir.requester_id,
+            ir.item_id AS listing_id,
+            i.name AS listing_title
+        FROM item_requests ir
+        LEFT JOIN items i
+            ON i.id = ir.item_id
+        WHERE ir.id = ?
+          AND ir.owner_id = ?
+        LIMIT 1
+    ";
+
 } else {
     $table = 'service_requests';
     $ownerColumn = 'provider_id';
+
+    /* Get the requester and service details */
+    $checkSql = "
+        SELECT
+            sr.id,
+            sr.status,
+            sr.requester_id,
+            sr.service_id AS listing_id,
+            s.title AS listing_title
+        FROM service_requests sr
+        LEFT JOIN services s
+            ON s.id = sr.service_id
+        WHERE sr.id = ?
+          AND sr.provider_id = ?
+        LIMIT 1
+    ";
 }
 
 /* Verify that this user owns/provides the requested listing */
-$checkSql = "
-    SELECT id, status
-    FROM {$table}
-    WHERE id = ?
-      AND {$ownerColumn} = ?
-    LIMIT 1
-";
-
 $checkStmt = $conn->prepare($checkSql);
 
 if (!$checkStmt) {
@@ -116,6 +143,7 @@ if (!$request) {
 $currentStatus = strtolower((string) $request['status']);
 
 if ($action === 'undo_accept') {
+
     /* Only accepted requests can return to pending */
     if ($currentStatus !== 'accepted') {
         header('Location: transactions.php?result=invalid_transition');
@@ -126,6 +154,7 @@ if ($action === 'undo_accept') {
     $requiredStatus = 'accepted';
 
 } else {
+
     /* Accept and Reject are only allowed for pending requests */
     if ($currentStatus !== 'pending') {
         header('Location: transactions.php?result=not_pending');
@@ -138,7 +167,6 @@ if ($action === 'undo_accept') {
 
 /*
  * Update the request only if it still has the expected status.
- * This prevents overwriting a request that was already changed.
  */
 $updateSql = "
     UPDATE {$table}
@@ -171,6 +199,68 @@ $updateStmt->close();
 if ($updatedRows !== 1) {
     header('Location: transactions.php?result=not_pending');
     exit;
+}
+
+/* Send a notification to the student who submitted the request */
+try {
+
+    $requesterId = (int) $request['requester_id'];
+    $listingId = (int) $request['listing_id'];
+
+    $listingTitle = trim((string) ($request['listing_title'] ?? ''));
+
+    if ($listingTitle === '') {
+        $listingTitle = $requestType === 'item_request'
+            ? 'your requested item'
+            : 'your requested service';
+    }
+
+    /* Generate the correct listing link */
+    if ($requestType === 'item_request') {
+        $listingLink = 'item-view.php?id=' . $listingId;
+    } else {
+        $listingLink = 'service-view.php?id=' . $listingId;
+    }
+
+    /* Create the notification message */
+    if ($action === 'accept') {
+
+        $notificationMessage =
+            'Your request for "' . $listingTitle .
+            '" has been accepted.';
+
+    } elseif ($action === 'reject') {
+
+        $notificationMessage =
+            'Your request for "' . $listingTitle .
+            '" has been rejected.';
+
+    } else {
+
+        $notificationMessage =
+            'The acceptance of your request for "' . $listingTitle .
+            '" was undone. Your request is now Pending.';
+    }
+
+    /* Do not notify the current user about their own action */
+    if ($requesterId > 0 && $requesterId !== $userId) {
+
+        createNotification(
+            $conn,
+            $requesterId,
+            $notificationMessage,
+            $listingLink,
+            $userId
+        );
+    }
+
+} catch (Throwable $notificationError) {
+
+    /* Notification failure should not undo a successful request update */
+    error_log(
+        'Request action notification error: ' .
+        $notificationError->getMessage()
+    );
 }
 
 /* Redirect back to My Transactions */

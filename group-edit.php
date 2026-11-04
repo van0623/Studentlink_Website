@@ -348,7 +348,7 @@ require_once __DIR__ . '/includes/header.php';
             <div class="actions">
                 <a
                     class="btn btn-quiet"
-                    href="group-view.php?id=<?= (int) $groupId ?>"
+                    href="groups.php?id=<?= (int) $groupId ?>"
                 >
                     Cancel
                 </a>

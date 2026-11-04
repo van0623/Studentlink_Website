@@ -1,3 +1,4 @@
+
 <?php
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -435,7 +436,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $conn->begin_transaction();
 
         $groupCheck = $conn->prepare(
-            "SELECT id, max_members, status
+            "SELECT id, name, max_members, status
              FROM study_groups
              WHERE id = ?
              FOR UPDATE"
@@ -510,11 +511,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
              VALUES (?, ?)"
         );
 
+        if (!$join) {
+            throw new RuntimeException(
+                'Group membership preparation failed.'
+            );
+        }
+
         $join->bind_param('ii', $groupId, $userId);
-        $join->execute();
+
+        if (!$join->execute()) {
+            throw new RuntimeException(
+                'Unable to join the study group.'
+            );
+        }
+
         $join->close();
 
+        /* Save the membership first */
         $conn->commit();
+
+        /* Notify the student who joined */
+        try {
+            createNotification(
+                $conn,
+                $userId,
+                'You successfully joined the study group: ' . $group['name'],
+                'group-view.php?id=' . $groupId,
+                null
+            );
+        } catch (Throwable $notificationError) {
+            error_log(
+                'Group join notification error: '
+                . $notificationError->getMessage()
+            );
+        }
 
         header('Location: groups.php?message=joined');
         exit;
@@ -641,7 +671,6 @@ foreach ($rows as $g) {
     $groups[] = $g;
 }
 
-
 require_once __DIR__ . '/includes/header.php';
 ?>
 
@@ -654,7 +683,6 @@ require_once __DIR__ . '/includes/header.php';
             <span class="groups-eyebrow">Study Groups</span>
             <h1>Study <span>together</span></h1>
             <p>Find classmates, join a group, and study together.</p>
-
         </div>
 
         <a class="group-create-btn" href="group-create.php">
@@ -895,156 +923,33 @@ require_once __DIR__ . '/includes/header.php';
                                 </span>
                             <?php endif; ?>
 
-                           
-<div class="group-actions">
+                            <div class="group-actions">
 
-    <a
-        class="group-view-btn"
-        href="group-view.php?id=<?= (int) $g['id'] ?>"
-    >
-        View <span aria-hidden="true">&rarr;</span>
-    </a>
+                                <a
+                                    class="group-view-btn"
+                                    href="group-view.php?id=<?= (int) $g['id'] ?>"
+                                >
+                                    View <span aria-hidden="true">&rarr;</span>
+                                </a>
 
-    <?php if (!$g['is_owner']): ?>
+                                <?php if (!$g['is_owner']): ?>
 
-        <!-- Message the group creator -->
-        <form
-            method="post"
-            action="groups.php"
-            class="group-message-form"
-        >
-            <input
-                type="hidden"
-                name="group_id"
-                value="<?= (int) $g['id'] ?>"
-            >
-
-            <input
-                type="hidden"
-                name="action"
-                value="message_creator"
-            >
-
-            <input
-                type="hidden"
-                name="csrf_token"
-                value="<?= e($csrfToken) ?>"
-            >
-
-            <button
-                type="submit"
-                class="group-message-btn"
-            >
-                Message Creator
-                <span aria-hidden="true">&#8594;</span>
-            </button>
-        </form>
-
-        <!-- Report another student's group -->
-        <a
-            href="report.php?type=Group&id=<?= (int) $g['id'] ?>"
-            class="group-report-btn"
-        >
-            Report
-        </a>
-
-    <?php endif; ?>
-
-    <!-- Join or unfollow -->
-    <?php if ($g['is_member']): ?>
-
-        <form
-            method="post"
-            action="groups.php"
-            onsubmit="return confirm('Are you sure you want to unfollow this group?');"
-        >
-            <input
-                type="hidden"
-                name="group_id"
-                value="<?= (int) $g['id'] ?>"
-            >
-
-            <input
-                type="hidden"
-                name="action"
-                value="unfollow"
-            >
-
-            <input
-                type="hidden"
-                name="csrf_token"
-                value="<?= e($csrfToken) ?>"
-            >
-
-            <button type="submit" class="group-leave-btn">
-                Unfollow
-            </button>
-        </form>
-
-    <?php elseif ($g['is_full']): ?>
-
-        <button
-            type="button"
-            class="group-disabled-btn"
-            disabled
-        >
-            Group full
-        </button>
-
-    <?php else: ?>
-
-        <form method="post" action="groups.php">
-            <input
-                type="hidden"
-                name="group_id"
-                value="<?= (int) $g['id'] ?>"
-            >
-
-            <input
-                type="hidden"
-                name="action"
-                value="join"
-            >
-
-            <input
-                type="hidden"
-                name="csrf_token"
-                value="<?= e($csrfToken) ?>"
-            >
-
-            <button type="submit" class="group-join-btn">
-                Join group
-            </button>
-        </form>
-
-    <?php endif; ?>
-
-</div>
-
-
-                        <!-- Owner-only edit and delete actions -->
-                        <?php if ($g['is_owner']): ?>
-
-                            <div class="group-owner-actions">
-                                <span class="group-owner-label">Your group</span>
-
-                                <div class="group-owner-buttons">
-                                    <a
-                                        class="group-edit-btn"
-                                        href="group-edit.php?id=<?= (int) $g['id'] ?>"
-                                    >
-                                        Edit group
-                                    </a>
-
+                                    <!-- Message the group creator -->
                                     <form
                                         method="post"
-                                        action="group-delete.php"
-                                        onsubmit="return confirm('Are you sure you want to permanently delete this study group and its memberships? This cannot be undone.');"
+                                        action="groups.php"
+                                        class="group-message-form"
                                     >
                                         <input
                                             type="hidden"
                                             name="group_id"
                                             value="<?= (int) $g['id'] ?>"
+                                        >
+
+                                        <input
+                                            type="hidden"
+                                            name="action"
+                                            value="message_creator"
                                         >
 
                                         <input
@@ -1055,11 +960,135 @@ require_once __DIR__ . '/includes/header.php';
 
                                         <button
                                             type="submit"
-                                            class="group-delete-btn"
+                                            class="group-message-btn"
                                         >
-                                            Delete group
+                                            Message Creator
+                                            <span aria-hidden="true">&#8594;</span>
                                         </button>
                                     </form>
+
+                                    <!-- Report another student's group -->
+                                    <a
+                                        href="report.php?type=Group&id=<?= (int) $g['id'] ?>"
+                                        class="group-report-btn"
+                                    >
+                                        Report
+                                    </a>
+
+                                <?php endif; ?>
+
+                                <!-- Join or unfollow -->
+                                <?php if ($g['is_member']): ?>
+
+                                    <form
+                                        method="post"
+                                        action="groups.php"
+                                        onsubmit="return confirm('Are you sure you want to unfollow this group?');"
+                                    >
+                                        <input
+                                            type="hidden"
+                                            name="group_id"
+                                            value="<?= (int) $g['id'] ?>"
+                                        >
+
+                                        <input
+                                            type="hidden"
+                                            name="action"
+                                            value="unfollow"
+                                        >
+
+                                        <input
+                                            type="hidden"
+                                            name="csrf_token"
+                                            value="<?= e($csrfToken) ?>"
+                                        >
+
+                                        <button type="submit" class="group-leave-btn">
+                                            Unfollow
+                                        </button>
+                                    </form>
+
+                                <?php elseif ($g['is_full']): ?>
+
+                                    <button
+                                        type="button"
+                                        class="group-disabled-btn"
+                                        disabled
+                                    >
+                                        Group full
+                                    </button>
+
+                                <?php else: ?>
+
+                                    <form method="post" action="groups.php">
+                                        <input
+                                            type="hidden"
+                                            name="group_id"
+                                            value="<?= (int) $g['id'] ?>"
+                                        >
+
+                                        <input
+                                            type="hidden"
+                                            name="action"
+                                            value="join"
+                                        >
+
+                                        <input
+                                            type="hidden"
+                                            name="csrf_token"
+                                            value="<?= e($csrfToken) ?>"
+                                        >
+
+                                        <button type="submit" class="group-join-btn">
+                                            Join group
+                                        </button>
+                                    </form>
+
+                                <?php endif; ?>
+
+                            </div>
+                        </div>
+
+                        <!-- Owner-only edit and delete actions -->
+                        <?php if ($g['is_owner']): ?>
+
+                            <div class="group-owner-actions">
+                                <span class="group-owner-label">Your group</span>
+
+                                <div class="group-owner-buttons">
+
+                                    <a
+                                        class="group-edit-btn"
+                                        href="group-edit.php?id=<?= (int) $g['id'] ?>"
+                                    >
+                                        Edit group
+                                    </a>
+
+                                    <form
+                                        action="group-delete.php"
+                                        method="POST"
+                                        onsubmit="return confirm('Are you sure you want to delete this group?');"
+                                    >
+                                        <input
+                                            type="hidden"
+                                            name="csrf_token"
+                                            value="<?= e($csrfToken) ?>"
+                                        >
+
+                                        <input
+                                            type="hidden"
+                                            name="group_id"
+                                            value="<?= (int) $g['id'] ?>"
+                                        >
+
+                                        <button
+                                            type="submit"
+                                            class="group-delete-btn"
+                                        >
+                                            Delete Group
+                                        </button>
+                                    </form>
+
                                 </div>
                             </div>
 

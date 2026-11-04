@@ -1,3 +1,4 @@
+
 <?php
 session_start();
 
@@ -12,10 +13,15 @@ if (empty($_SESSION['user_id'])) {
 
 $userId = (int) $_SESSION['user_id'];
 $user = [
-    'name' => $_SESSION['full_name'] ?? 'Student'   // header.php shows the avatar initials
+    'name' => $_SESSION['full_name'] ?? 'Student'
 ];
 
 $id = (int) ($_GET['id'] ?? 0);
+
+if ($id < 1) {
+    header('Location: groups.php');
+    exit;
+}
 
 /* Load the group, its member count, and whether this user is already in it */
 $sql = "SELECT
@@ -31,13 +37,19 @@ $sql = "SELECT
             (SELECT COUNT(*) FROM group_members WHERE group_id = g.id AND user_id = ?) AS is_member
         FROM study_groups g
         JOIN subjects s ON s.id = g.subject_id
-        JOIN users u    ON u.id = g.creator_id
+        JOIN users u ON u.id = g.creator_id
         WHERE g.id = ?
-          AND g.status = 'Active'";
+        AND g.status = 'Active'";
 
 $stmt = $conn->prepare($sql);
+
+if (!$stmt) {
+    exit('Unable to load the study group.');
+}
+
 $stmt->bind_param('ii', $userId, $id);
 $stmt->execute();
+
 $g = $stmt->get_result()->fetch_assoc();
 $stmt->close();
 
@@ -48,29 +60,65 @@ if (!$g) {
 }
 
 /* Membership information */
-$members  = (int) $g['members'];
-$maximum  = max(1, (int) $g['max_members']);
+$members = (int) $g['members'];
+$maximum = max(1, (int) $g['max_members']);
 $isMember = (int) $g['is_member'] > 0;
-$full     = $members >= $maximum;
+$full = $members >= $maximum;
 
-/* Join the group. The query checks again that a seat is still free. */
+/* Join the group */
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$isMember && !$full) {
+
     $join = $conn->prepare(
         "INSERT IGNORE INTO group_members (group_id, user_id)
          SELECT g.id, ?
          FROM study_groups g
          WHERE g.id = ?
            AND g.status = 'Active'
-           AND (SELECT COUNT(*) FROM group_members m WHERE m.group_id = g.id) < g.max_members"
+           AND (
+               SELECT COUNT(*)
+               FROM group_members m
+               WHERE m.group_id = g.id
+           ) < g.max_members"
     );
+
+    if (!$join) {
+        exit('Unable to join the study group.');
+    }
+
     $join->bind_param('ii', $userId, $id);
     $join->execute();
+
     $joined = $join->affected_rows > 0;
+
     $join->close();
 
-    header('Location: group-view.php?id=' . $id . ($joined ? '&joined=1' : '&full=1'));
+    /*
+     * Notify the student who successfully joined.
+     */
+    if ($joined) {
+        try {
+            createNotification(
+                $conn,
+                $userId,
+                'You successfully joined the study group: ' . $g['name'],
+                'group-view.php?id=' . $id,
+                null
+            );
+        } catch (Throwable $notificationError) {
+            error_log(
+                'Group join notification error: '
+                . $notificationError->getMessage()
+            );
+        }
+    }
+
+    header(
+        'Location: group-view.php?id=' . $id .
+        ($joined ? '&joined=1' : '&full=1')
+    );
     exit;
 }
+
 $percentage = min(100, round($members / $maximum * 100));
 
 $title = 'Study Group';
@@ -83,13 +131,19 @@ require_once __DIR__ . '/includes/header.php';
 <main class="wrap">
 
     <!-- Back navigation -->
-    <a class="back" href="groups.php" aria-label="Back to groups">&larr; Back to groups</a>
+    <a class="back" href="groups.php" aria-label="Back to groups">
+        &larr; Back to groups
+    </a>
 
     <!-- Notification messages -->
     <?php if (isset($_GET['joined'])): ?>
-        <div class="notice" role="status">You joined this group.</div>
+        <div class="notice" role="status">
+            You joined this group.
+        </div>
     <?php elseif (isset($_GET['full'])): ?>
-        <div class="notice error" role="alert">Sorry, this group just filled up.</div>
+        <div class="notice error" role="alert">
+            Sorry, this group just filled up or is no longer available.
+        </div>
     <?php endif; ?>
 
     <section class="detail" aria-label="Study group details">
@@ -110,9 +164,14 @@ require_once __DIR__ . '/includes/header.php';
             <section class="info">
                 <h2><?= $members ?> of <?= $maximum ?> members</h2>
 
-                <div class="meter" role="progressbar" aria-label="Group capacity"
-                     aria-valuemin="0" aria-valuemax="<?= $maximum ?>"
-                     aria-valuenow="<?= min($members, $maximum) ?>">
+                <div
+                    class="meter"
+                    role="progressbar"
+                    aria-label="Group capacity"
+                    aria-valuemin="0"
+                    aria-valuemax="<?= $maximum ?>"
+                    aria-valuenow="<?= min($members, $maximum) ?>"
+                >
                     <i style="width: <?= $percentage ?>%"></i>
                 </div>
 
@@ -130,23 +189,39 @@ require_once __DIR__ . '/includes/header.php';
 
             <!-- Join group -->
             <form class="actions" method="post" aria-label="Group membership">
+
                 <?php if ($isMember): ?>
-                    <button type="button" class="btn btn-primary" disabled>You are in this group</button>
+
+                    <button type="button" class="btn btn-primary" disabled>
+                        You are in this group
+                    </button>
+
                 <?php elseif ($full): ?>
-                    <button type="button" class="btn btn-primary" disabled>Group is full</button>
+
+                    <button type="button" class="btn btn-primary" disabled>
+                        Group is full
+                    </button>
+
                 <?php else: ?>
-                    <button type="submit" class="btn btn-primary">Join group</button>
+
+                    <button type="submit" class="btn btn-primary">
+                        Join group
+                    </button>
+
                 <?php endif; ?>
+
             </form>
 
         </article>
 
-        <!-- Group chat and schedule panel (one wrapper so the text stays together) -->
+        <!-- Group chat and schedule panel -->
         <aside class="panel" aria-label="Group chat and schedule">
+
             <div>
                 <h2>Group chat and schedule</h2>
                 <p>Group chat and schedule information will appear here.</p>
             </div>
+
         </aside>
 
     </section>

@@ -49,8 +49,7 @@ if (
 
 try {
     /*
-     * Soft delete:
-     * Only update an active service belonging to this user.
+     * Soft delete
      */
     $stmt = $conn->prepare(
         "UPDATE services
@@ -77,11 +76,6 @@ try {
         exit;
     }
 
-    /*
-     * No row was changed.
-     * The service may not exist, may already be removed,
-     * or may belong to another user.
-     */
     header('Location: services.php?error=delete_failed');
     exit;
 

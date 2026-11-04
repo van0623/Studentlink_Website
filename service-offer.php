@@ -42,6 +42,7 @@ try {
     while ($category = $categoryQuery->fetch_assoc()) {
         $categories_service[] = $category;
     }
+
 } catch (Throwable $e) {
     error_log('Service categories error: ' . $e->getMessage());
     $errors[] = 'Unable to load service categories. Please try again.';
@@ -133,7 +134,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             );
 
             $stmt->execute();
+
+            // Get the ID of the newly created service.
+            $newServiceId = $conn->insert_id;
+
             $stmt->close();
+
+            /*
+            |--------------------------------------------------------------------------
+            | SEND NOTIFICATIONS AFTER SUCCESSFUL SERVICE CREATION
+            |--------------------------------------------------------------------------
+            */
+
+            $serviceLink = 'service-view.php?id=' . $newServiceId;
+
+            try {
+                // Notify the student who posted the service.
+                createNotification(
+                    $conn,
+                    $userId,
+                    'Your service "' . $serviceTitle . '" was successfully posted.',
+                    $serviceLink,
+                    $userId
+                );
+
+                // Notify admins who enabled new-content notifications.
+                notifyAdmins(
+                    $conn,
+                    'notify_new_content',
+                    'A new service has been posted: "' . $serviceTitle . '".',
+                    $serviceLink,
+                    $userId
+                );
+
+            } catch (Throwable $notificationError) {
+                // Notification failure must not undo the successful service post.
+                error_log(
+                    'Service notification error: ' .
+                    $notificationError->getMessage()
+                );
+            }
 
             header('Location: services.php?posted=1');
             exit;

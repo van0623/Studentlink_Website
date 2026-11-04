@@ -36,7 +36,6 @@ if (!$user) {
 
 /*
  * Count records.
- * This helper now supports multiple query parameters.
  */
 function countUserRecords(
     mysqli $conn,

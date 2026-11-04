@@ -61,9 +61,6 @@ if (
 |--------------------------------------------------------------------------
 | Soft Delete Item
 |--------------------------------------------------------------------------
-| Only the owner can remove their own active item.
-| The item remains in the database with status = 'Removed'.
-|--------------------------------------------------------------------------
 */
 try {
     $stmt = $conn->prepare(
@@ -87,8 +84,7 @@ try {
         exit;
     }
 
-    // The item may not exist, may already be removed,
-    // or may belong to another user.
+
     header('Location: items.php?error=delete_failed');
     exit;
 

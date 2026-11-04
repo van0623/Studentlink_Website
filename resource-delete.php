@@ -6,7 +6,10 @@ if (session_status() === PHP_SESSION_NONE) {
 
 require_once __DIR__ . '/db_connect.php';
 
-/* Require login */
+/* =========================================
+   REQUIRE LOGIN
+========================================= */
+
 if (empty($_SESSION['user_id'])) {
     header('Location: login.php');
     exit;
@@ -14,13 +17,19 @@ if (empty($_SESSION['user_id'])) {
 
 $userId = (int) $_SESSION['user_id'];
 
-/* POST requests only */
+/* =========================================
+   POST REQUESTS ONLY
+========================================= */
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: resources.php');
     exit;
 }
 
-/* Validate CSRF token */
+/* =========================================
+   VALIDATE CSRF TOKEN
+========================================= */
+
 $submittedToken = $_POST['csrf_token'] ?? '';
 $sessionToken = $_SESSION['csrf_token'] ?? '';
 
@@ -34,7 +43,10 @@ if (
     exit;
 }
 
-/* Validate resource ID */
+/* =========================================
+   VALIDATE RESOURCE ID
+========================================= */
+
 $resourceId = filter_input(
     INPUT_POST,
     'resource_id',
@@ -46,7 +58,10 @@ if (!$resourceId || $resourceId < 1) {
     exit;
 }
 
-/* Verify account status and role */
+/* =========================================
+   VERIFY ACCOUNT STATUS AND ROLE
+========================================= */
+
 $userStmt = $conn->prepare(
     "SELECT role, status
      FROM users
@@ -71,7 +86,7 @@ $userStmt->close();
 if (
     !$currentUser ||
     $currentUser['status'] !== 'Active' ||
-    $currentUser['role'] !== 'student'
+    !in_array($currentUser['role'], ['student', 'admin'], true)
 ) {
     $conn->close();
 
@@ -81,6 +96,7 @@ if (
 
 /* =========================================
    SOFT DELETE RESOURCE
+   Only the resource owner can delete it.
 ========================================= */
 
 try {
@@ -91,6 +107,12 @@ try {
            AND user_id = ?
            AND status = 'Active'"
     );
+
+    if (!$stmt) {
+        throw new Exception(
+            'Resource delete query preparation failed: ' . $conn->error
+        );
+    }
 
     $stmt->bind_param('ii', $resourceId, $userId);
     $stmt->execute();

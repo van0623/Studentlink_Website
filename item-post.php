@@ -55,6 +55,7 @@ try {
     }
 
     $categoryQuery->close();
+
 } catch (Throwable $e) {
     $errors[] = 'Unable to load categories. Please check your database connection.';
 }
@@ -168,8 +169,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     */
     $imagePath = null;
     $temporaryImagePath = null;
+    $mimeType = '';
 
-    if (isset($_FILES['image']) && $_FILES['image']['error'] !== UPLOAD_ERR_NO_FILE) {
+    if (
+        isset($_FILES['image']) &&
+        $_FILES['image']['error'] !== UPLOAD_ERR_NO_FILE
+    ) {
         $upload = $_FILES['image'];
 
         if ($upload['error'] !== UPLOAD_ERR_OK) {
@@ -257,6 +262,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->execute();
             $newItemId = $conn->insert_id;
             $stmt->close();
+
+            /*
+            |--------------------------------------------------------------------------
+            | Send notifications after successful item creation
+            |--------------------------------------------------------------------------
+            */
+            $itemLink = 'item-view.php?id=' . $newItemId;
+
+            try {
+                // Notify the student who posted the item.
+                createNotification(
+                    $conn,
+                    $userId,
+                    'Your item "' . $name . '" was successfully posted.',
+                    $itemLink,
+                    $userId
+                );
+
+                // Notify admins who enabled new-content notifications.
+                notifyAdmins(
+                    $conn,
+                    'notify_new_content',
+                    'A new item has been posted: "' . $name . '".',
+                    $itemLink,
+                    $userId
+                );
+
+            } catch (Throwable $notificationError) {
+                // Notification failure must not undo a successful item post.
+                error_log(
+                    'Item notification error: ' .
+                    $notificationError->getMessage()
+                );
+            }
 
             /*
             | Redirect after successful creation

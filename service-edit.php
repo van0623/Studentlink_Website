@@ -179,7 +179,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $service) {
             );
 
             $stmt->execute();
-            $updatedRows = $stmt->affected_rows;
             $stmt->close();
 
             /* Confirm that the service still belongs to this user */
@@ -204,6 +203,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $service) {
 
             if (!$stillExists) {
                 throw new Exception('The service is no longer available.');
+            }
+
+            /* Send notifications after successful update */
+            try {
+                $serviceLink = 'service-view.php?id=' . $serviceId;
+
+                /* Notify the service owner */
+                createNotification(
+                    $conn,
+                    $userId,
+                    'Your service "' . $serviceTitle . '" was successfully updated.',
+                    $serviceLink,
+                    $userId
+                );
+
+                /* Notify admins */
+                notifyAdmins(
+                    $conn,
+                    'notify_content',
+                    'A service has been updated: "' . $serviceTitle . '".',
+                    $serviceLink,
+                    $userId
+                );
+
+            } catch (Throwable $notificationError) {
+                error_log(
+                    'Service edit notification error: ' .
+                    $notificationError->getMessage()
+                );
             }
 
             header(

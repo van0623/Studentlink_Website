@@ -107,18 +107,15 @@ if (
     exit('The uploaded file could not be found.');
 }
 
-/* Open the file before sending notifications */
+/* Open the file before sending the notification */
 $fileHandle = fopen($filePath, 'rb');
 
 if ($fileHandle === false) {
     exit('Unable to open the uploaded file.');
 }
 
-/*
- * Notify the downloader.
- */
+/* Notify the student who downloaded the resource */
 $resourceTitle = $resource['title'];
-$ownerId = (int) $resource['user_id'];
 
 createNotification(
     $conn,
@@ -126,41 +123,6 @@ createNotification(
     'You successfully downloaded: ' . $resourceTitle,
     'resource-view.php?id=' . $resourceId
 );
-
-/*
- * Notify the owner only when another user downloads it.
- */
-if ($ownerId !== $currentUserId) {
-    $downloaderStmt = $conn->prepare("
-        SELECT full_name
-        FROM users
-        WHERE id = ?
-        LIMIT 1
-    ");
-
-    $downloaderName = 'A student';
-
-    if ($downloaderStmt) {
-        $downloaderStmt->bind_param('i', $currentUserId);
-        $downloaderStmt->execute();
-
-        $downloaderResult = $downloaderStmt->get_result();
-        $downloader = $downloaderResult->fetch_assoc();
-
-        if (!empty($downloader['full_name'])) {
-            $downloaderName = $downloader['full_name'];
-        }
-
-        $downloaderStmt->close();
-    }
-
-    createNotification(
-        $conn,
-        $ownerId,
-        $downloaderName . ' downloaded your resource: ' . $resourceTitle,
-        'resource-view.php?id=' . $resourceId
-    );
-}
 
 /* Prepare safe download filename */
 $originalFileName = basename(
